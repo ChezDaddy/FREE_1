@@ -1,82 +1,1755 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head><meta charset="UTF-8"/><title>Debug DaddyBaux</title></head>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DaddyBaux</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --red:#B7242B; --red-dark:#8f1a20; --red-light:#f9e8e9;
+  --orange:#d3692D; --vert:#8CADA1; --ambre:#E59E00; --gris:#284351;
+  --bg:#F5F3EF; --surf:#FFFFFF; --brd:#E2DDD6; --txt:#1A1714; --mut:#7A746C;
+  --r:10px; --sh:0 2px 12px rgba(0,0,0,.08); --sh2:0 8px 32px rgba(0,0,0,.12);
+  --fd:'DM Serif Display',Georgia,serif; --fb:'DM Sans',system-ui,sans-serif;
+  --mc:#B7242B;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:var(--bg);color:var(--txt);font-size:14px;min-height:100vh}
+
+/* LOGIN */
+#loginWrap{display:flex;align-items:center;justify-content:center;min-height:100vh;
+  background:var(--gris);
+  background-image:radial-gradient(ellipse 60% 50% at 20% 30%,rgba(183,36,43,.3) 0%,transparent 60%),
+                   radial-gradient(ellipse 40% 60% at 80% 70%,rgba(211,105,45,.2) 0%,transparent 60%)}
+.lcard{background:#fff;border-radius:20px;padding:48px 40px;width:360px;box-shadow:0 24px 64px rgba(0,0,0,.3)}
+.llogo{font-family:var(--fd);font-size:2.2rem;color:var(--red);text-align:center;letter-spacing:-.5px}
+.lsub{text-align:center;color:var(--mut);font-size:.8rem;margin-top:4px}
+.lver{text-align:center;color:var(--mut);font-size:.7rem;margin-bottom:32px;opacity:.7}
+.fg{margin-bottom:16px}
+.fg label{display:block;font-size:.75rem;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.fg input{width:100%;padding:11px 14px;border:1.5px solid var(--brd);border-radius:var(--r);font-family:var(--fb);font-size:.95rem;background:var(--bg);outline:none;transition:border-color .2s}
+.fg input:focus{border-color:var(--red)}
+.pwrap{position:relative}
+.pwrap input{padding-right:44px}
+.peye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;line-height:1;padding:4px;color:var(--mut)}
+.peye:hover{color:var(--txt)}
+.lbtn{width:100%;padding:13px;background:var(--red);color:#fff;border:none;border-radius:var(--r);font-family:var(--fb);font-size:.95rem;font-weight:600;cursor:pointer;transition:background .2s;margin-top:4px}
+.lbtn:hover{background:var(--red-dark)}
+.lerr{color:var(--red);font-size:.82rem;margin-top:10px;text-align:center;display:none}
+
+/* APP */
+#appWrap{flex-direction:column;min-height:100vh}
+.hidden{display:none!important}
+
+/* HEADER */
+.hdr{background:var(--mc);color:#fff;display:flex;align-items:center;gap:16px;padding:0 24px;height:56px;position:sticky;top:0;z-index:100;transition:background .4s;box-shadow:var(--sh)}
+.hlogo{font-family:var(--fd);font-size:1.35rem;letter-spacing:-.3px;flex-shrink:0}
+.hsp{flex:1}
+#mSel{background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;padding:5px 10px;font-family:var(--fb);font-size:.82rem;cursor:pointer;outline:none;display:none}
+#mSel option{color:var(--txt);background:#fff}
+.huser{font-size:.8rem;opacity:.85;flex-shrink:0}
+.hout{background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;padding:5px 12px;cursor:pointer;font-family:var(--fb);font-size:.8rem;font-weight:500}
+.hout:hover{background:rgba(255,255,255,.3)}
+
+/* NAV */
+.nav{background:var(--surf);border-bottom:1.5px solid var(--brd);display:flex;padding:0 24px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.ni{padding:14px 16px;cursor:pointer;font-size:.85rem;font-weight:500;color:var(--mut);border-bottom:2.5px solid transparent;white-space:nowrap;transition:color .2s,border-color .2s;user-select:none}
+.ni:hover{color:var(--txt)}
+.ni.on{color:var(--mc);border-bottom-color:var(--mc)}
+.ni.hide{display:none}
+
+/* MAIN */
+.main{flex:1;padding:28px 20px;max-width:1100px;width:100%;margin:0 auto}
+.pg{display:none}.pg.on{display:block}
+
+/* TYPOGRAPHY */
+.ptit{font-family:var(--fd);font-size:1.5rem;margin-bottom:6px}
+.psub{color:var(--mut);font-size:.85rem;margin-bottom:22px}
+
+/* CARD */
+.card{background:var(--surf);border:1.5px solid var(--brd);border-radius:var(--r);padding:22px;margin-bottom:18px;box-shadow:var(--sh)}
+.ctit{font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:680px){.g2,.g3{grid-template-columns:1fr}}
+
+/* STAT */
+.stat{background:var(--surf);border:1.5px solid var(--brd);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+.sv{font-family:var(--fd);font-size:2.2rem;color:var(--mc)}
+.sl{color:var(--mut);font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+
+/* TABLE */
+.tw{overflow-x:auto;border-radius:var(--r);border:1.5px solid var(--brd)}
+table{width:100%;border-collapse:collapse;background:var(--surf)}
+th{background:var(--bg);font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);padding:9px 13px;text-align:left;font-weight:600;border-bottom:1.5px solid var(--brd)}
+td{padding:10px 13px;border-bottom:1px solid var(--brd);font-size:.87rem;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg)}
+
+/* BADGES */
+.bdg{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:.72rem;font-weight:600}
+.b1{background:#FFF3CD;color:#856404}
+.b2{background:#D1E7DD;color:#0A5C36}
+.b3{background:#D5E8F0;color:#1A4F8A}
+.b4{background:var(--red-light);color:var(--red)}
+
+/* FORM */
+.fld{margin-bottom:13px}
+.fld label{display:block;font-size:.75rem;font-weight:600;color:var(--mut);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+.fld input,.fld select{width:100%;padding:9px 12px;border:1.5px solid var(--brd);border-radius:8px;font-family:var(--fb);font-size:.9rem;background:var(--bg);outline:none;transition:border-color .2s}
+.fld input:focus,.fld select:focus{border-color:var(--mc)}
+.frow{display:flex;gap:12px}.frow .fld{flex:1}
+
+/* BUTTONS */
+.btn{padding:7px 15px;border-radius:8px;font-family:var(--fb);font-size:.82rem;font-weight:600;cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.bp{background:var(--mc);color:#fff}.bp:hover{filter:brightness(1.1)}
+.bs{background:var(--bg);color:var(--txt);border:1.5px solid var(--brd)}.bs:hover{border-color:var(--mut)}
+.bd{background:#FEE2E2;color:#991B1B}.bd:hover{background:#FECACA}
+.blg{padding:10px 20px;font-size:.88rem;border-radius:var(--r)}
+
+/* UPLOAD ZONE */
+.upz{border:2px dashed var(--brd);border-radius:var(--r);padding:26px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg)}
+.upz:hover,.upz.drag{border-color:var(--mc);background:rgba(183,36,43,.04)}
+.upz input{display:none}
+.upz-ic{font-size:2rem;margin-bottom:8px}
+.upz p{color:var(--mut);font-size:.85rem}
+.upz strong{color:var(--mc)}
+.pill{display:inline-flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--brd);border-radius:20px;padding:5px 13px;font-size:.82rem;margin-top:8px}
+.pillx{cursor:pointer;color:var(--mut);margin-left:2px}.pillx:hover{color:var(--red)}
+
+/* STEPS */
+.steps{display:flex;margin-bottom:26px;border-bottom:none}
+.stp{flex:1;padding:10px 8px;text-align:center;font-size:.75rem;font-weight:600;color:var(--mut);border-bottom:3px solid var(--brd);white-space:nowrap;transition:all .2s}
+.stp.done{color:var(--vert);border-color:var(--vert)}
+.stp.on{color:var(--mc);border-color:var(--mc)}
+
+/* EXTRACTION FORM */
+.efg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.efg{grid-template-columns:1fr}}
+.ef{background:var(--bg);border:1.5px solid var(--brd);border-radius:8px;padding:10px 12px;transition:border-color .2s}
+.ef label{font-size:.7rem;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:3px}
+.ef input,.ef select{width:100%;border:none;background:none;font-family:var(--fb);font-size:.88rem;color:var(--txt);outline:none;padding:0}
+.ef.miss{border-color:var(--ambre);background:rgba(229,158,0,.07)}
+.sec-hd{font-size:.7rem;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;grid-column:1/-1;margin-top:10px;padding-bottom:5px;border-bottom:1px solid var(--brd)}
+
+/* OPTION TOGGLE */
+.optbox{border:1.5px solid var(--brd);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
+.optbox-t{background:var(--bg);padding:9px 14px;font-size:.75rem;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--brd)}
+.optchs{display:flex}
+.optc{flex:1;padding:12px;cursor:pointer;text-align:center;font-size:.85rem;border:none;background:none;font-family:var(--fb);font-weight:500;color:var(--mut);transition:all .2s}
+.optc:first-child{border-right:1px solid var(--brd)}
+.optc.on{background:var(--mc);color:#fff;font-weight:600}
+
+/* MODEL BADGE */
+.mbdg{display:inline-flex;align-items:center;gap:6px;background:var(--red-light);color:var(--red);border:1px solid rgba(183,36,43,.2);border-radius:6px;padding:4px 10px;font-size:.78rem;font-weight:600}
+.mbdg.ok{background:#D1E7DD;color:#0A5C36;border-color:rgba(10,92,54,.2)}
+
+/* ALERTS */
+.al{padding:11px 15px;border-radius:8px;font-size:.84rem;margin-bottom:14px;border-left:4px solid}
+.al-i{background:#EBF5FB;color:#1A4F8A;border-color:#1A4F8A}
+.al-w{background:#FFF8E6;color:#856404;border-color:var(--ambre)}
+.al-ok{background:#D1E7DD;color:#0A5C36;border-color:#0A5C36}
+
+/* MISC */
+.flex{display:flex}.aic{align-items:center}.jb{justify-content:space-between}
+.gap8{gap:8px}.gap12{gap:12px}
+.mt8{margin-top:8px}.mt16{margin-top:16px}.mt20{margin-top:20px}
+.mb8{margin-bottom:8px}.mb14{margin-bottom:14px}
+.tr{text-align:right}.tc{text-align:center}
+.mut{color:var(--mut)}.sm{font-size:.8rem}
+.hide{display:none!important}
+code{background:var(--bg);border:1px solid var(--brd);border-radius:4px;padding:1px 5px;font-size:.78rem}
+
+/* MODAL */
+.mover{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center}
+.mover.on{display:flex}
+.mbox{background:#fff;border-radius:16px;padding:30px;width:90%;max-width:500px;box-shadow:var(--sh2);max-height:90vh;overflow-y:auto}
+.mbox h3{font-family:var(--fd);font-size:1.25rem;margin-bottom:16px}
+.mact{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+
+/* SPINNER */
+.spin{width:36px;height:36px;border:3px solid var(--brd);border-top-color:var(--mc);border-radius:50%;animation:rot .7s linear infinite;margin:auto}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* LOADING OVERLAY */
+#ldOver{display:none;position:fixed;inset:0;background:rgba(255,255,255,.88);backdrop-filter:blur(3px);z-index:800;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+#ldOver.on{display:flex}
+#ldOver p{color:var(--mut);font-size:.9rem;font-weight:500}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--gris);color:#fff;padding:11px 18px;border-radius:10px;font-size:.87rem;font-weight:500;box-shadow:var(--sh2);opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;max-width:300px}
+#toast.on{opacity:1;transform:translateY(0)}
+#toast.ok{background:#1A6B3C}
+#toast.err{background:var(--red-dark)}
+</style>
+</head>
 <body>
-<h2>Debug GitHub Pages</h2>
-<pre id="out" style="background:#f0f0f0;padding:16px;font-size:12px;white-space:pre-wrap"></pre>
 
+<!-- ═══ LOGIN ═══ -->
+<div id="loginWrap">
+  <div class="lcard">
+    <div class="llogo">DaddyBaux</div>
+    <div class="lsub">Rédaction automatisée des baux de location</div>
+    <div class="lver">v1.0</div>
+    <div class="fg">
+      <label>Identifiant</label>
+      <input id="liU" type="text" placeholder="Votre login" autocomplete="username"/>
+    </div>
+    <div class="fg">
+      <label>Mot de passe</label>
+      <div class="pwrap">
+        <input id="liP" type="password" placeholder="••••••••" autocomplete="current-password"/>
+        <button class="peye" type="button" id="eyeBtn" onclick="toggleEye()">👁</button>
+      </div>
+    </div>
+    <button class="lbtn" id="lBtn" onclick="doLogin()">Se connecter</button>
+    <div class="lerr" id="lerr">Identifiant ou mot de passe incorrect</div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div id="appWrap" class="hidden">
+  <div class="hdr" id="hdr">
+    <div class="hlogo">🏠 DaddyBaux</div>
+    <select id="mSel" onchange="onMS()"></select>
+    <div class="hsp"></div>
+    <span class="huser" id="hUser"></span>
+    <button class="hout" onclick="doLogout()">Déconnexion</button>
+  </div>
+  <div class="nav" id="nav">
+    <div class="ni on" data-p="dash" onclick="gp(this)">📊 Tableau de bord</div>
+    <div class="ni" data-p="baux" onclick="gp(this)">📄 Baux</div>
+    <div class="ni" data-p="sepa" onclick="gp(this)">🏦 Mandats SEPA</div>
+    <div class="ni" data-p="histo" onclick="gp(this)">🕑 Historique</div>
+    <div class="ni hide" id="niAdmin" data-p="admin" onclick="gp(this)">⚙️ Administration</div>
+  </div>
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="pg on" id="pg-dash">
+      <div class="ptit" id="dashTit">Tableau de bord</div>
+      <div class="psub">Vue d'ensemble de l'activité</div>
+      <div class="g3">
+        <div class="stat"><div class="sv" id="sB">—</div><div class="sl">Baux générés</div></div>
+        <div class="stat"><div class="sv" id="sS">—</div><div class="sl">Mandats SEPA</div></div>
+        <div class="stat"><div class="sv" id="sM">—</div><div class="sl">Maisons actives</div></div>
+      </div>
+      <div class="card mt20">
+        <div class="ctit">📄 Derniers baux</div>
+        <div class="tw"><table>
+          <thead><tr><th>Locataire</th><th>Maison</th><th>Date</th><th>Statut</th><th></th></tr></thead>
+          <tbody id="dashTb"><tr><td colspan="5" class="tc mut" style="padding:24px">Chargement…</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- BAUX LIST -->
+    <div class="pg" id="pg-baux">
+      <div class="flex aic jb mb14">
+        <div><div class="ptit">Baux de location</div><div class="psub">Génération automatisée des baux</div></div>
+        <button class="btn bp blg" onclick="gpName('nouveau-bail')">+ Nouveau bail</button>
+      </div>
+      <div class="card" style="padding:14px">
+        <div class="flex gap12">
+          <div class="fld" style="margin:0;flex:1"><label>Statut</label>
+            <select id="fSt" onchange="loadBaux()"><option value="">Tous</option><option value="brouillon">Brouillon</option><option value="genere">Généré</option></select>
+          </div>
+          <div class="fld" style="margin:0;flex:2"><label>Recherche</label>
+            <input id="fSr" type="text" placeholder="Nom du locataire…" oninput="loadBaux()"/>
+          </div>
+        </div>
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>Locataire</th><th>Maison</th><th>Loyer</th><th>Date signature</th><th>Créé le</th><th>Statut</th><th></th></tr></thead>
+        <tbody id="bauxTb"><tr><td colspan="7" class="tc mut" style="padding:24px">Chargement…</td></tr></tbody>
+      </table></div>
+    </div>
+
+    <!-- NOUVEAU BAIL WIZARD -->
+    <div class="pg" id="pg-nouveau-bail">
+      <div class="flex aic gap12 mb14">
+        <button class="btn bs" onclick="gpName('baux')">← Retour</button>
+        <div><div class="ptit">Nouveau bail</div></div>
+      </div>
+      <div class="steps">
+        <div class="stp on" id="sl1">1. Modèle</div>
+        <div class="stp" id="sl2">2. Fiche PDF</div>
+        <div class="stp" id="sl3">3. Vérification</div>
+        <div class="stp" id="sl4">4. Bail généré</div>
+      </div>
+
+      <!-- BS1 : Modèle -->
+      <div id="bs1">
+        <div class="card">
+          <div class="ctit">📄 Modèle de bail actif pour cette maison</div>
+          <div id="modActif">Chargement…</div>
+          <div class="al al-i mt16">Le modèle est géré dans <strong>Administration → Maison</strong>. Un seul modèle actif par maison.</div>
+        </div>
+        <div class="tr"><button class="btn bp blg" onclick="bN1()">Suivant →</button></div>
+      </div>
+
+      <!-- BS2 : PDF -->
+      <div id="bs2" class="hide">
+        <div class="card">
+          <div class="ctit">📂 Fiche de préparation de bail (PDF)</div>
+          <div class="al al-i">L'application extrait automatiquement les informations de la fiche standardisée Maison Daddy.</div>
+          <div class="upz" id="upZ" onclick="document.getElementById('upI').click()"
+               ondragover="dov(event,'upZ')" ondragleave="dlv('upZ')" ondrop="drp(event,'upI','upZ')">
+            <input type="file" id="upI" accept=".pdf" onchange="setPdf(this)"/>
+            <div class="upz-ic">📂</div>
+            <p><strong>Cliquer</strong> ou glisser la fiche de préparation PDF</p>
+          </div>
+          <div id="pdfPill" class="hide"></div>
+        </div>
+        <div class="flex gap8 jb mt8">
+          <button class="btn bs" onclick="bGs(1)">← Précédent</button>
+          <button class="btn bp blg" onclick="bN2()">Extraire les informations →</button>
+        </div>
+      </div>
+
+      <!-- BS3 : Vérification -->
+      <div id="bs3" class="hide">
+        <div class="card">
+          <div class="ctit">✅ Vérification et correction des données extraites</div>
+          <div id="extAl" class="al al-i">Vérifiez les champs extraits.</div>
+
+          <!-- Option 1/2 -->
+          <div class="optbox mb14">
+            <div class="optbox-t">📅 Prise d'effet du bail</div>
+            <div class="optchs">
+              <button class="optc on" id="o1b" onclick="selOpt(1)">Option 1 — À la date de signature</button>
+              <button class="optc" id="o2b" onclick="selOpt(2)">Option 2 — Date postérieure</button>
+            </div>
+          </div>
+          <div id="o2df" class="hide ef mb14">
+            <label>Date postérieure de prise d'effet</label>
+            <input id="extDp" type="date"/>
+          </div>
+
+          <!-- Champs -->
+          <div class="efg" id="extForm"></div>
+        </div>
+
+        <!-- Options logement -->
+        <div class="card">
+          <div class="ctit">⚙️ Options du logement</div>
+          <div class="g2">
+            <div class="ef"><label>Type de logement</label>
+              <select id="optM"><option value="meublé">Meublé</option><option value="non meublé">Non meublé</option></select>
+            </div>
+            <div class="ef"><label>Équipement PMR</label>
+              <select id="optP"><option value="Non équipé PMR">Non équipé PMR</option><option value="Équipé PMR">Équipé PMR</option></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Garant -->
+        <div class="card">
+          <div class="ctit">👤 Garant</div>
+          <div class="fld"><label>Garant</label>
+            <select id="optG" onchange="tglG()"><option value="non">Sans garant</option><option value="oui">Avec garant</option></select>
+          </div>
+          <div id="gFields" class="hide g2">
+            <div class="ef"><label>Nom &amp; Prénom garant</label><input id="gPre" type="text" placeholder="Prénom Nom"/></div>
+            <div class="ef"><label>Adresse garant</label><input id="gAdr" type="text"/></div>
+          </div>
+        </div>
+
+        <div class="flex gap8 jb mt8">
+          <button class="btn bs" onclick="bGs(2)">← Précédent</button>
+          <div class="flex gap8">
+            <button class="btn bs" onclick="saveDraft()">💾 Brouillon</button>
+            <button class="btn bp blg" onclick="bN3()">Générer le bail →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BS4 : Résultat -->
+      <div id="bs4" class="hide">
+        <div class="card tc">
+          <div style="font-size:3rem;margin-bottom:12px">🎉</div>
+          <div class="ptit mb8">Bail généré avec succès</div>
+          <p class="mut mb14">Le bail est archivé dans l'historique.</p>
+          <button class="btn bp blg" onclick="dlBail()">⬇️ Télécharger le DOCX</button>
+          <div class="mt16 flex gap8" style="justify-content:center">
+            <button class="btn bs" onclick="gpName('histo')">Voir l'historique</button>
+            <button class="btn bs" onclick="gpName('baux')">Retour aux baux</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEPA -->
+    <div class="pg" id="pg-sepa">
+      <div class="flex aic jb mb14">
+        <div><div class="ptit">Mandats SEPA</div><div class="psub">Génération des mandats de prélèvement</div></div>
+        <button class="btn bp blg" onclick="initSepa()">+ Nouveau mandat</button>
+      </div>
+      <div id="sepaList">Chargement…</div>
+      <div id="sepaWiz" class="hide">
+        <div class="steps">
+          <div class="stp on" id="ss1">1. Modèle</div>
+          <div class="stp" id="ss2">2. RIB</div>
+          <div class="stp" id="ss3">3. Validation</div>
+          <div class="stp" id="ss4">4. Téléchargement</div>
+        </div>
+        <div id="sS1">
+          <div class="card">
+            <div class="ctit">📄 Modèle Mandat SEPA actif</div>
+            <div id="sepaMA">Chargement…</div>
+            <div class="al al-i mt16">Le modèle SEPA est géré dans Administration.</div>
+          </div>
+          <div class="tr"><button class="btn bp" onclick="sN1()">Suivant →</button></div>
+        </div>
+        <div id="sS2" class="hide">
+          <div class="card">
+            <div class="ctit">🏦 RIB du locataire (PDF)</div>
+            <div class="al al-i">L'application extrait l'IBAN depuis le PDF du RIB.</div>
+            <div class="upz" onclick="document.getElementById('upRib').click()">
+              <input type="file" id="upRib" accept=".pdf" onchange="setRib(this)"/>
+              <div class="upz-ic">📑</div><p><strong>Cliquer</strong> pour déposer le RIB PDF</p>
+            </div>
+            <div id="ribPill" class="hide mt8"></div>
+          </div>
+          <div class="flex gap8 jb mt8">
+            <button class="btn bs" onclick="sGs(1)">← Précédent</button>
+            <button class="btn bp" onclick="sN2()">Extraire l'IBAN →</button>
+          </div>
+        </div>
+        <div id="sS3" class="hide">
+          <div class="card">
+            <div class="ctit">✅ Vérification données SEPA</div>
+            <div class="g2">
+              <div class="ef"><label>IBAN</label><input id="sIban" type="text"/></div>
+              <div class="ef"><label>BIC</label><input id="sBic" type="text"/></div>
+              <div class="ef"><label>Titulaire</label><input id="sTit" type="text"/></div>
+              <div class="ef"><label>Banque</label><input id="sBanq" type="text"/></div>
+              <div class="ef"><label>Locataire (prénom nom)</label><input id="sLoc" type="text"/></div>
+              <div class="ef"><label>Adresse locataire</label><input id="sAdr" type="text"/></div>
+            </div>
+          </div>
+          <div class="flex gap8 jb mt8">
+            <button class="btn bs" onclick="sGs(2)">← Précédent</button>
+            <button class="btn bp" onclick="sN3()">Générer →</button>
+          </div>
+        </div>
+        <div id="sS4" class="hide">
+          <div class="card tc">
+            <div style="font-size:3rem;margin-bottom:12px">🎉</div>
+            <div class="ptit mb8">Mandat SEPA généré</div>
+            <button class="btn bp blg" onclick="dlSepa()">⬇️ Télécharger le DOCX</button>
+            <div class="mt16"><button class="btn bs" onclick="resetSepa()">Nouveau mandat</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORIQUE -->
+    <div class="pg" id="pg-histo">
+      <div class="ptit">Historique des documents</div>
+      <div class="psub">Tous les baux et mandats SEPA générés</div>
+      <div class="card" style="padding:14px">
+        <div class="flex gap12">
+          <div class="fld" style="margin:0;flex:1"><label>Type</label>
+            <select id="hT" onchange="loadHisto()"><option value="">Tous</option><option value="bail">Baux</option><option value="sepa">Mandats SEPA</option></select>
+          </div>
+          <div class="fld" style="margin:0;flex:1"><label>Du</label><input id="hDe" type="date" onchange="loadHisto()"/></div>
+          <div class="fld" style="margin:0;flex:1"><label>Au</label><input id="hFi" type="date" onchange="loadHisto()"/></div>
+        </div>
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>Type</th><th>Locataire</th><th>Maison</th><th>Date</th><th>Statut</th><th></th></tr></thead>
+        <tbody id="histoTb"><tr><td colspan="6" class="tc mut" style="padding:24px">Chargement…</td></tr></tbody>
+      </table></div>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="pg" id="pg-admin">
+      <div class="ptit">Administration</div>
+      <div class="psub">Maisons, modèles, utilisateurs</div>
+
+      <div class="card">
+        <div class="ctit flex jb"><span>🏠 Maisons et modèles</span>
+          <button class="btn bp" onclick="openMod('mNM')">+ Nouvelle maison</button>
+        </div>
+        <div id="adMaisons">Chargement…</div>
+      </div>
+
+      <div class="card">
+        <div class="ctit flex jb"><span>👤 Utilisateurs</span>
+          <button class="btn bp" onclick="openMod('mNU')">+ Nouvel utilisateur</button>
+        </div>
+        <div id="adUsers">Chargement…</div>
+      </div>
+
+      <div class="card">
+        <div class="ctit">🔑 Clé API Anthropic (extraction PDF)</div>
+        <div class="al al-i">Requise pour l'extraction automatique des fiches PDF. Stockée dans votre navigateur.</div>
+        <div class="frow">
+          <div class="fld" style="flex:1"><label>Clé API (sk-ant-…)</label>
+            <input id="apiKI" type="password" placeholder="sk-ant-api03-…"/>
+          </div>
+          <div class="fld" style="align-self:flex-end;margin-bottom:13px">
+            <button class="btn bp" onclick="saveKey()">💾 Enregistrer</button>
+          </div>
+        </div>
+        <div id="apiKS" class="sm mut"></div>
+      </div>
+
+      <div class="card">
+        <div class="ctit">🗑️ Purge des données</div>
+        <div class="al al-w">⚠️ Export CSV automatique avant suppression.</div>
+        <div class="frow mt16">
+          <div class="fld"><label>Purger les données antérieures au</label><input id="purgeD" type="date"/></div>
+          <div class="fld" style="align-self:flex-end;margin-bottom:13px">
+            <button class="btn bd" onclick="doPurge()">🗑️ Purger</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /appWrap -->
+
+<!-- MODALS -->
+<div class="mover" id="mNM">
+  <div class="mbox">
+    <h3>🏠 Nouvelle maison</h3>
+    <div class="fld"><label>Nom</label><input id="nMNom" type="text" placeholder="Maison Autun"/></div>
+    <div class="fld"><label>Ville</label><input id="nMVil" type="text"/></div>
+    <div class="fld"><label>Adresse</label><input id="nMAdr" type="text"/></div>
+    <div class="fld"><label>Login</label><input id="nMLg" type="text" placeholder="MaisonXXX"/></div>
+    <div class="fld"><label>Mot de passe initial</label><input id="nMMdp" type="text"/></div>
+    <div class="fld"><label>Couleur</label><input id="nMCol" type="color" value="#d3692D"/></div>
+    <div class="mact">
+      <button class="btn bs" onclick="closeMod('mNM')">Annuler</button>
+      <button class="btn bp" onclick="crMaison()">Créer</button>
+    </div>
+  </div>
+</div>
+
+<div class="mover" id="mUpM">
+  <div class="mbox">
+    <h3>📄 Modèle — <span id="mUpMN"></span></h3>
+    <div class="al al-w">Remplace le modèle actif de la maison.</div>
+    <div class="fld"><label>Type de modèle</label>
+      <select id="mUpT"><option value="bail">Bail de location</option><option value="sepa">Mandat SEPA</option></select>
+    </div>
+    <div class="upz" onclick="document.getElementById('mUpF').click()">
+      <input type="file" id="mUpF" accept=".docx" onchange="showUpPill(this)"/>
+      <div class="upz-ic">📄</div>
+      <p><strong>Cliquer</strong> pour sélectionner le modèle .docx</p>
+      <p class="sm mt8">Placeholders : <code>{{locataire_nom}}</code> <code>{{montant_loyer}}</code> etc.</p>
+    </div>
+    <div id="upPillM" class="hide mt8"></div>
+    <div class="mact">
+      <button class="btn bs" onclick="closeMod('mUpM')">Annuler</button>
+      <button class="btn bp" onclick="doUpload()">📤 Téléverser</button>
+    </div>
+  </div>
+</div>
+
+<div class="mover" id="mNU">
+  <div class="mbox">
+    <h3>👤 Nouvel utilisateur</h3>
+    <div class="fld"><label>Login</label><input id="nULg" type="text"/></div>
+    <div class="fld"><label>Mot de passe</label><input id="nUMd" type="text"/></div>
+    <div class="fld"><label>Rôle</label>
+      <select id="nUR" onchange="document.getElementById('nUMF').style.display=this.value==='maison'?'block':'none'">
+        <option value="admin">Administrateur</option>
+        <option value="operations">Opérations</option>
+        <option value="maison">Responsable Maison</option>
+      </select>
+    </div>
+    <div class="fld" id="nUMF" style="display:none"><label>Maison associée</label><select id="nUMS"></select></div>
+    <div class="mact">
+      <button class="btn bs" onclick="closeMod('mNU')">Annuler</button>
+      <button class="btn bp" onclick="crUser()">Créer</button>
+    </div>
+  </div>
+</div>
+
+<div class="mover" id="mCf">
+  <div class="mbox">
+    <h3 id="cfT">Confirmer</h3>
+    <p id="cfM" class="mut" style="margin-bottom:4px"></p>
+    <div class="mact">
+      <button class="btn bs" onclick="closeMod('mCf')">Annuler</button>
+      <button class="btn bd" id="cfOk">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<div id="ldOver"><div class="spin"></div><p id="ldMsg">Traitement…</p></div>
+<div id="toast"></div>
+
+<!-- ═══ SCRIPT ═══ -->
 <script>
-var out = document.getElementById('out');
-function log(msg) { out.textContent += msg + '\n'; }
+/* ── CONFIG ── */
+const SB_URL = 'https://cafkamkmwupkehvbcmli.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhZmthbWttd3Vwa2VodmJjbWxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNjc1NjMsImV4cCI6MjA5Mjk0MzU2M30.JAnyxpKZ87vfIfPet4vnSiWKY6OKDCNADdKUvxcBnB8';
 
-log('=== 1. JS chargé : OK ===');
+/* ── PLACEHOLDERS exacts du bail Daddy ── */
+const BAIL_FIELDS = [
+  {k:'locataire_nom',               l:'Nom & Prénom',                sec:'Locataire'},
+  {k:'locataire_date_lieu_naissance',l:'Date & Lieu de naissance',   sec:'Locataire'},
+  {k:'locataire_nationalite',       l:'Nationalité',                 sec:'Locataire'},
+  {k:'locataire_regime_matrimonial',l:'Régime matrimonial',          sec:'Locataire'},
+  {k:'locataire_adresse',           l:'Adresse actuelle',            sec:'Locataire'},
+  {k:'locataire_telephone',         l:'Téléphone',                   sec:'Locataire'},
+  {k:'locataire_email',             l:'Email',                       sec:'Locataire'},
+  {k:'date_signature',              l:'Date de signature',           sec:'Bail',      t:'date'},
+  {k:'numero_appartement',          l:'N° appartement',              sec:'Logement'},
+  {k:'appt_type',                   l:'Type (T1, T2…)',              sec:'Logement'},
+  {k:'surface_habitable',           l:'Surface habitable (m²)',      sec:'Logement'},
+  {k:'surface_carrez',              l:'Surface Carrez (m²)',         sec:'Logement'},
+  {k:'nb_chambres',                 l:'Nb chambres',                 sec:'Logement'},
+  {k:'nb_salle_douche',             l:'Nb salle de douche',          sec:'Logement'},
+  {k:'nb_salon',                    l:'Nb salon',                    sec:'Logement'},
+  {k:'depenses_energie_annuelles',  l:'Dépenses énergie annuelles',  sec:'DPE'},
+  {k:'montant_loyer',               l:'Montant loyer (€)',           sec:'Financier', t:'num'},
+  {k:'provision_charges',           l:'Provision charges (€)',       sec:'Financier', t:'num'},
+  {k:'provision_garantie_mois',     l:'Dépôt garantie (mois)',       sec:'Financier'},
+  {k:'provision_garantie',          l:'Dépôt garantie (€)',          sec:'Financier', t:'num'},
+  {k:'plafond_honoraires_gestion',  l:'Plafond honoraires (€)',      sec:'Financier', t:'num'},
+  {k:'plafond_etat_lieux',          l:'Plafond état des lieux (€)',  sec:'Financier', t:'num'},
+];
 
-// Test onclick
-log('=== 2. Test window functions ===');
-function testFn() { log('testFn appelée : OK'); }
-window.testFn = testFn;
-log('window.testFn défini : ' + (typeof window.testFn));
+/* ── UTILISATEURS PAR DÉFAUT ── */
+/* Mots de passe stockés en hash SHA-256 uniquement */
+async function hashPw(pw) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+}
 
-// Test crypto.subtle
-log('=== 3. crypto.subtle ===');
-if (window.crypto && window.crypto.subtle) {
-  log('crypto.subtle : disponible');
-  crypto.subtle.digest('SHA-256', new TextEncoder().encode('test'))
-    .then(function(buf) {
-      var hex = Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
-      log('SHA-256("test") = ' + hex.slice(0,20) + '...');
-      log('crypto.subtle : FONCTIONNE');
+const DEFAULT_USERS = [
+  {login:'Finance',    pwh:'ce8469382632fecabcf9740ef2b1eb0579807e63895b196c5088491ba11ecae1', role:'admin',      maison:null,              display:'Administrateur'},
+  {login:'Arnaud',     pwh:'012e950adc5ab76e08359a2652346c78119b2fec21f366af07fb8252639f130c', role:'operations', maison:null,              display:'Dirigeant'},
+  {login:'Operations', pwh:'012e950adc5ab76e08359a2652346c78119b2fec21f366af07fb8252639f130c', role:'operations', maison:null,              display:'Opérations'},
+  {login:'MaisonAUT',  pwh:'975faad60ec28a9ecab8e3dbcbcf66e66f26d5eb0e5b3b21107614e6fdf86a16', role:'maison',     maison:'Autun',           display:'Autun'},
+  {login:'MaisonLMD',  pwh:'71d32105ba1c2b76a5beb51db4dbe67163b6191cdccaf2fe7c9d99806eed9c2f', role:'maison',     maison:'La Madeleine',    display:'La Madeleine'},
+  {login:'MaisonDOU',  pwh:'d33c33293e421d9af07b4d48377a9e39b88024ac8f67d300cd4726b95906c3a5', role:'maison',     maison:'Douai',           display:'Douai'},
+  {login:'MaisonCFD',  pwh:'c709625ae9569c2142f680d709a77197eef0dfb14386fec16b655ae3cd9fa969', role:'maison',     maison:'Clermont-Ferrand',display:'Clermont-Ferrand'},
+];
+
+/* ── STATE ── */
+let CU = null;  // current user
+let CM = null;  // current maison
+let allM = [];  // toutes les maisons
+let upMaisonId = null;
+
+let bw = {step:1, modPath:null, pdfFile:null, data:{}, opt:1, genBlob:null};
+let sw = {step:1, modPath:null, pdfFile:null, data:{}, genBlob:null};
+
+/* ── USERS ── */
+function safeStorage(fn, fallback) {
+  try { return fn(); } catch(e) { return fallback; }
+}
+function getUsers() {
+  const raw = safeStorage(function(){ return localStorage.getItem('db_users'); }, null);
+  if (raw && raw.length > 2) {
+    try {
+      const parsed = JSON.parse(atob(raw));
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch(e) { /* fallback */ }
+  }
+  safeStorage(function(){ localStorage.setItem('db_users', btoa(JSON.stringify(DEFAULT_USERS))); }, null);
+  return DEFAULT_USERS;
+}
+function saveUsers(u) { safeStorage(function(){ localStorage.setItem('db_users', btoa(JSON.stringify(u))); }, null); }
+function getApiKey() { return safeStorage(function(){ return localStorage.getItem('ak'); }, '') || ''; }
+
+/* ── AUTH ── */
+async function doLogin() {
+  const login = document.getElementById('liU').value.trim();
+  const pw    = document.getElementById('liP').value;
+  document.getElementById('lerr').style.display = 'none';
+
+  if (!login || !pw) {
+    document.getElementById('lerr').style.display = 'block';
+    document.getElementById('lerr').textContent = 'Veuillez renseigner identifiant et mot de passe.';
+    return;
+  }
+
+  const pwh   = await hashPw(pw);
+  const users = getUsers();
+  const u     = users.find(function(x) { return x.login === login && x.pwh === pwh; });
+
+  if (!u) {
+    document.getElementById('lerr').style.display = 'block';
+    document.getElementById('lerr').textContent = 'Identifiant ou mot de passe incorrect.';
+    return;
+  }
+
+  safeStorage(function(){ sessionStorage.setItem('sess', btoa(JSON.stringify(u))); }, null);
+  CU = u;
+  startApp();
+}
+
+function doLogout() {
+  try { sessionStorage.removeItem('sess'); } catch(e) {}
+  location.reload();
+}
+
+function toggleEye() {
+  const inp = document.getElementById('liP');
+  const btn = document.getElementById('eyeBtn');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    inp.type = 'password';
+    btn.textContent = '👁';
+  }
+}
+
+
+/* ── APP START ── */
+function startApp() {
+  document.getElementById('loginWrap').classList.add('hidden');
+  document.getElementById('appWrap').classList.remove('hidden');
+  document.getElementById('hUser').textContent = CU.display + ' · ' + CU.role;
+
+  if (CU.role === 'admin') {
+    document.getElementById('niAdmin').classList.remove('hide');
+  }
+
+  // Init maisons (fallback local, pas de await bloquant)
+  allM = [
+    {id:'aut', nom:'Autun',            ville:'Autun',            couleur:'#d3692D'},
+    {id:'lmd', nom:'La Madeleine',     ville:'La Madeleine',     couleur:'#8CADA1'},
+    {id:'dou', nom:'Douai',            ville:'Douai',            couleur:'#d3692D'},
+    {id:'cfd', nom:'Clermont-Ferrand', ville:'Clermont-Ferrand', couleur:'#E59E00'},
+  ];
+  buildMaisonSel();
+  gpName('dash');
+
+  // Charger les maisons depuis Supabase en arrière-plan (sans bloquer)
+  sbQ('maisons?select=*&order=nom').then(function(rows) {
+    if (rows && rows.length) { allM = rows; buildMaisonSel(); }
+  }).catch(function() { /* garde le fallback local */ });
+
+  // Créer les buckets en arrière-plan
+  ensureBuckets();
+
+  updKeyStatus();
+}
+
+/* ── MAISONS ── */
+function buildMaisonSel() {
+  const sel = document.getElementById('mSel');
+  const canSwitch = CU.role === 'admin' || CU.role === 'operations';
+  const list = CU.role === 'maison' ? allM.filter(function(m) { return m.nom === CU.maison; }) : allM;
+  const useList = list.length ? list : allM;
+
+  sel.innerHTML = useList.map(function(m) {
+    return '<option value="' + m.id + '">' + m.nom + '</option>';
+  }).join('');
+
+  CM = useList[0] || null;
+  sel.style.display = (canSwitch && useList.length > 1) ? 'inline-block' : 'none';
+  applyColor();
+
+  // Remplir le select maison dans modal nouvel utilisateur
+  const nUMS = document.getElementById('nUMS');
+  if (nUMS) {
+    nUMS.innerHTML = allM.map(function(m) {
+      return '<option value="' + m.id + '">' + m.nom + '</option>';
+    }).join('');
+  }
+}
+
+function onMS() {
+  const id = document.getElementById('mSel').value;
+  CM = allM.find(function(m) { return m.id == id; }) || allM[0];
+  applyColor();
+  const active = document.querySelector('.ni.on');
+  if (active) lpd(active.dataset.p);
+}
+
+function applyColor() {
+  if (!CM) return;
+  const c = CM.couleur || '#B7242B';
+  document.documentElement.style.setProperty('--mc', c);
+}
+
+/* ── NAVIGATION ── */
+function gp(el) {
+  document.querySelectorAll('.ni').forEach(function(n) { n.classList.remove('on'); });
+  el.classList.add('on');
+  const name = el.dataset.p;
+  document.querySelectorAll('.pg').forEach(function(p) { p.classList.remove('on'); });
+  const pg = document.getElementById('pg-' + name);
+  if (pg) pg.classList.add('on');
+  lpd(name);
+}
+
+function gpName(name) {
+  const ni = document.querySelector('[data-p="' + name + '"]');
+  if (ni) { gp(ni); } else {
+    document.querySelectorAll('.pg').forEach(function(p) { p.classList.remove('on'); });
+    const pg = document.getElementById('pg-' + name);
+    if (pg) pg.classList.add('on');
+    lpd(name);
+  }
+}
+
+function lpd(name) {
+  switch(name) {
+    case 'dash':         loadDash();      break;
+    case 'baux':         loadBaux();      break;
+    case 'histo':        loadHisto();     break;
+    case 'admin':        loadAdmin();     break;
+    case 'sepa':         loadSepaList();  break;
+    case 'nouveau-bail': initBailWiz();   break;
+  }
+}
+
+/* ── SUPABASE ── */
+async function sbQ(path, opts) {
+  opts = opts || {};
+  const res = await fetch(SB_URL + '/rest/v1/' + path, {
+    method: opts.method || 'GET',
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + SB_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': opts.prefer || 'return=representation'
+    },
+    body: opts.body ? JSON.stringify(opts.body) : undefined
+  });
+  if (!res.ok) throw new Error(await res.text());
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+async function sbUp(bucket, path, file) {
+  const hdrs = {
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + SB_KEY,
+    'Content-Type': file.type || 'application/octet-stream',
+    'x-upsert': 'true'
+  };
+  let res = await fetch(SB_URL + '/storage/v1/object/' + bucket + '/' + path, {method:'POST', headers:hdrs, body:file});
+  if (!res.ok) {
+    res = await fetch(SB_URL + '/storage/v1/object/' + bucket + '/' + path, {method:'PUT', headers:hdrs, body:file});
+    if (!res.ok) throw new Error(await res.text());
+  }
+  return res.json();
+}
+
+async function sbDown(bucket, path) {
+  const res = await fetch(SB_URL + '/storage/v1/object/' + bucket + '/' + path, {
+    headers: {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY}
+  });
+  if (!res.ok) throw new Error('Fichier introuvable dans le storage');
+  return res.blob();
+}
+
+function ensureBuckets() {
+  ['modeles','dossiers','baux-generes'].forEach(function(n) {
+    fetch(SB_URL + '/storage/v1/bucket', {
+      method: 'POST',
+      headers: {'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+      body: JSON.stringify({id:n, name:n, public:false})
+    }).catch(function() {});
+  });
+}
+
+/* ── DASHBOARD ── */
+async function loadDash() {
+  if (CM) document.getElementById('dashTit').textContent = 'Tableau de bord · ' + CM.nom;
+  const q = (CU.role === 'maison' && CM) ? '&maison_id=eq.' + CM.id : '';
+  try {
+    const baux  = await sbQ('baux?select=id,statut,locataire_nom,maison_id,created_at&order=created_at.desc&limit=5' + q).catch(function() { return []; });
+    const sepas = await sbQ('mandats_sepa?select=id' + q).catch(function() { return []; });
+    document.getElementById('sB').textContent = baux  ? baux.length  : '—';
+    document.getElementById('sS').textContent = sepas ? sepas.length : '—';
+    document.getElementById('sM').textContent = CU.role === 'maison' ? 1 : allM.length;
+    const tb = document.getElementById('dashTb');
+    if (!baux || !baux.length) {
+      tb.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--mut)">Aucun bail généré</td></tr>';
+      return;
+    }
+    tb.innerHTML = baux.map(function(b) {
+      const m = allM.find(function(x) { return x.id == b.maison_id; });
+      const d = b.created_at ? new Date(b.created_at).toLocaleDateString('fr-FR') : '—';
+      return '<tr><td>' + (b.locataire_nom||'—') + '</td><td>' + (m?m.nom:'—') + '</td><td>' + d + '</td><td>' + bstat(b.statut) + '</td><td><button class="btn bs" onclick="gpName(\'histo\')">Voir</button></td></tr>';
+    }).join('');
+  } catch(e) {
+    document.getElementById('dashTb').innerHTML = '<tr><td colspan="5" class="tc mut" style="padding:20px">Configurez Supabase pour voir les données</td></tr>';
+  }
+}
+
+/* ── BAUX ── */
+async function loadBaux() {
+  const st = document.getElementById('fSt').value;
+  const sr = document.getElementById('fSr').value.toLowerCase();
+  const tb = document.getElementById('bauxTb');
+  tb.innerHTML = '<tr><td colspan="7" class="tc"><div class="spin" style="margin:16px auto"></div></td></tr>';
+  try {
+    let q = 'baux?select=*&order=created_at.desc';
+    if (CU.role === 'maison' && CM) q += '&maison_id=eq.' + CM.id;
+    if (st) q += '&statut=eq.' + st;
+    let rows = await sbQ(q);
+    if (!rows) rows = [];
+    if (sr) rows = rows.filter(function(b) { return (b.locataire_nom||'').toLowerCase().includes(sr); });
+    if (!rows.length) {
+      tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--mut)">Aucun bail trouvé</td></tr>';
+      return;
+    }
+    tb.innerHTML = rows.map(function(b) {
+      const m = allM.find(function(x) { return x.id == b.maison_id; });
+      const dl = b.docx_path ? '<button class="btn bp" onclick="dlSb(\'' + b.docx_path + '\',\'bail.docx\')">⬇️</button>' : '';
+      return '<tr><td><strong>' + (b.locataire_nom||'—') + '</strong></td><td>' + (m?m.nom:'—') + '</td>' +
+        '<td>' + (b.montant_loyer ? mFr(b.montant_loyer)+'€' : '—') + '</td>' +
+        '<td>' + (b.date_signature||'—') + '</td>' +
+        '<td>' + (b.created_at ? new Date(b.created_at).toLocaleDateString('fr-FR') : '—') + '</td>' +
+        '<td>' + bstat(b.statut) + '</td>' +
+        '<td class="flex gap8">' + dl + '<button class="btn bd" onclick="delBail(\'' + b.id + '\')">🗑️</button></td></tr>';
+    }).join('');
+  } catch(e) {
+    tb.innerHTML = '<tr><td colspan="7" class="tc mut" style="padding:16px">Erreur: ' + e.message + '</td></tr>';
+  }
+}
+
+async function delBail(id) {
+  cf2('Supprimer ce bail ?', '', async function() {
+    await sbQ('baux?id=eq.' + id, {method:'DELETE'});
+    toast('Bail supprimé', 'ok');
+    loadBaux();
+  });
+}
+
+/* ── BAIL WIZARD ── */
+function initBailWiz() {
+  bw = {step:1, modPath:null, pdfFile:null, data:{}, opt:1, genBlob:null};
+  bGs(1);
+  loadModActif();
+}
+
+function bGs(n) {
+  bw.step = n;
+  [1,2,3,4].forEach(function(i) {
+    const block = document.getElementById('bs'+i);
+    const label = document.getElementById('sl'+i);
+    block.classList.toggle('hide', i !== n);
+    label.className = 'stp' + (i < n ? ' done' : i === n ? ' on' : '');
+  });
+}
+
+async function loadModActif() {
+  const el = document.getElementById('modActif');
+  if (!CM) { el.innerHTML = '<p class="mut sm">Sélectionnez une maison.</p>'; return; }
+  try {
+    const mods = await sbQ('modeles?select=*&type_doc=eq.bail&maison_id=eq.' + CM.id + '&order=created_at.desc&limit=1');
+    if (!mods || !mods.length) {
+      el.innerHTML = '<div class="al al-w">⚠️ Aucun modèle de bail pour <strong>' + CM.nom + '</strong>. Téléversez-en un dans Administration.</div>';
+    } else {
+      const m = mods[0];
+      bw.modPath = m.storage_path;
+      const d = new Date(m.created_at).toLocaleDateString('fr-FR');
+      el.innerHTML = '<div class="flex aic gap12"><span class="mbdg ok">✅ Modèle actif</span><span><strong>' + m.nom + '</strong> <span class="mut sm">— v' + (m.version||1) + ' — ' + d + '</span></span></div>';
+    }
+  } catch(e) {
+    el.innerHTML = '<div class="al al-w">Erreur chargement modèle: ' + e.message + '</div>';
+  }
+}
+
+async function bN1() {
+  if (!bw.modPath) {
+    try {
+      const mods = await sbQ('modeles?select=*&type_doc=eq.bail&maison_id=eq.' + (CM?CM.id:'') + '&order=created_at.desc&limit=1');
+      if (!mods || !mods.length) { toast('Aucun modèle de bail configuré pour cette maison', 'err'); return; }
+      bw.modPath = mods[0].storage_path;
+    } catch(e) { toast('Erreur: ' + e.message, 'err'); return; }
+  }
+  bGs(2);
+}
+
+function setPdf(inp) {
+  const f = inp.files[0];
+  if (!f) return;
+  bw.pdfFile = f;
+  const pill = document.getElementById('pdfPill');
+  pill.className = 'pill';
+  pill.innerHTML = '📎 ' + f.name + ' <span class="pillx" onclick="bw.pdfFile=null;document.getElementById(\'pdfPill\').className=\'hide\'">✕</span>';
+}
+
+async function bN2() {
+  if (!bw.pdfFile) { toast('Déposez la fiche PDF', 'err'); return; }
+  showLd('Extraction des données de la fiche…');
+  try {
+    const data = await extractFiche(bw.pdfFile);
+    bw.data = data;
+    hideLoad();
+    renderExtForm(data);
+    if (data.appartement_meuble) document.getElementById('optM').value = data.appartement_meuble;
+    if (data.equipement_pmr)     document.getElementById('optP').value = data.equipement_pmr;
+    selOpt(data.option_bail === '2' ? 2 : 1);
+    if (data.date_posterieure) document.getElementById('extDp').value = data.date_posterieure;
+    if (data.garant_prenom) {
+      document.getElementById('optG').value = 'oui';
+      tglG();
+      document.getElementById('gPre').value = data.garant_prenom || '';
+      document.getElementById('gAdr').value = data.garant_adresse || '';
+    }
+    bGs(3);
+  } catch(e) {
+    hideLoad();
+    toast('Extraction: ' + e.message, 'err');
+    bw.data = {};
+    renderExtForm({});
+    bGs(3);
+  }
+}
+
+function renderExtForm(data) {
+  const al = document.getElementById('extAl');
+  const filled = BAIL_FIELDS.filter(function(f) { return data[f.k] && data[f.k] !== ''; }).length;
+  al.className = 'al ' + (filled >= 15 ? 'al-ok' : 'al-w');
+  al.textContent = filled + '/' + BAIL_FIELDS.length + ' champs extraits. Vérifiez et corrigez si nécessaire.';
+
+  const secs = {};
+  BAIL_FIELDS.forEach(function(f) {
+    if (!secs[f.sec]) secs[f.sec] = [];
+    secs[f.sec].push(f);
+  });
+
+  let h = '';
+  Object.keys(secs).forEach(function(sec) {
+    h += '<div class="sec-hd">' + sec + '</div>';
+    secs[sec].forEach(function(f) {
+      const v = (data[f.k] || '');
+      const miss = v ? '' : ' miss';
+      const type = f.t === 'date' ? 'date' : f.t === 'num' ? 'number' : 'text';
+      const step = f.t === 'num' ? ' step="0.01"' : '';
+      h += '<div class="ef' + miss + '" id="efc_' + f.k + '">' +
+           '<label>' + f.l + '</label>' +
+           '<input type="' + type + '"' + step + ' id="ef_' + f.k + '" value="' + v + '" ' +
+           'oninput="bw.data[\'' + f.k + '\']=this.value;document.getElementById(\'efc_' + f.k + '\').className=\'ef\'+(this.value?\'\':\' miss\')"/>' +
+           '</div>';
+    });
+  });
+  document.getElementById('extForm').innerHTML = h;
+}
+
+function selOpt(n) {
+  bw.opt = n;
+  document.getElementById('o1b').className = 'optc' + (n === 1 ? ' on' : '');
+  document.getElementById('o2b').className = 'optc' + (n === 2 ? ' on' : '');
+  document.getElementById('o2df').classList.toggle('hide', n !== 2);
+}
+
+function tglG() {
+  const v = document.getElementById('optG').value;
+  document.getElementById('gFields').classList.toggle('hide', v !== 'oui');
+}
+
+function collectData() {
+  const d = Object.assign({}, bw.data);
+  BAIL_FIELDS.forEach(function(f) {
+    const el = document.getElementById('ef_' + f.k);
+    if (el) d[f.k] = el.value;
+  });
+  d.appartement_meuble = document.getElementById('optM').value;
+  d.equipement_pmr     = document.getElementById('optP').value;
+  d.option_bail        = String(bw.opt);
+  d.date_posterieure   = document.getElementById('extDp').value || '';
+
+  if (document.getElementById('optG').value === 'oui') {
+    d.garant_prenom  = document.getElementById('gPre').value;
+    d.garant_adresse = document.getElementById('gAdr').value;
+  } else {
+    d.garant_prenom  = '';
+    d.garant_adresse = '';
+  }
+
+  // Montants → "lettres (chiffres €)"
+  ['montant_loyer','provision_charges','provision_garantie','plafond_honoraires_gestion','plafond_etat_lieux'].forEach(function(k) {
+    const v = parseFloat(d[k]);
+    if (!isNaN(v) && v > 0) d[k] = n2l(v) + ' (' + mFr(v) + ' €)';
+  });
+  return d;
+}
+
+async function saveDraft() {
+  const d = collectData();
+  try {
+    await sbQ('baux', {method:'POST', body:{locataire_nom:d.locataire_nom||'', maison_id:CM?CM.id:null, statut:'brouillon', data_json:JSON.stringify(d)}});
+    toast('Brouillon sauvegardé', 'ok');
+  } catch(e) { toast('Erreur: ' + e.message, 'err'); }
+}
+
+async function bN3() {
+  const d = collectData();
+  showLd('Génération du bail…');
+  try {
+    const modBlob = await sbDown('modeles', bw.modPath);
+    const docx    = await genDocx(modBlob, d, bw.opt);
+    bw.genBlob    = docx;
+    bw.data       = d;
+
+    const fname = 'bail_' + (d.locataire_nom||'locataire').replace(/\s+/g,'_') + '_' + Date.now() + '.docx';
+    await sbUp('baux-generes', fname, docx).catch(function() {});
+    await sbQ('baux', {method:'POST', body:{
+      locataire_nom: d.locataire_nom || '',
+      maison_id:     CM ? CM.id : null,
+      montant_loyer: parseFloat(d.montant_loyer) || null,
+      date_signature:d.date_signature || null,
+      statut:        'genere',
+      docx_path:     fname,
+      data_json:     JSON.stringify(d)
+    }}).catch(function() {});
+
+    hideLoad();
+    bGs(4);
+    toast('Bail généré avec succès !', 'ok');
+  } catch(e) {
+    hideLoad();
+    toast('Erreur génération: ' + e.message, 'err');
+  }
+}
+
+function dlBail() {
+  if (bw.genBlob) saveAs(bw.genBlob, 'bail_' + (bw.data.locataire_nom||'locataire') + '.docx');
+}
+
+/* ── DOCX ── */
+async function loadDocxLib() {
+  if (window.PizZip && window.Docxtemplater) return;
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.4/pizzip.min.js');
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.44.4/docxtemplater.js');
+}
+
+function loadScript(src) {
+  return new Promise(function(res, rej) {
+    if (document.querySelector('script[src="' + src + '"]')) { res(); return; }
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+async function genDocx(modBlob, data, option) {
+  await loadDocxLib();
+  const ab  = await modBlob.arrayBuffer();
+  const zip = new PizZip(ab);
+
+  if (option === 1 || option === 2) {
+    let xml = zip.file('word/document.xml').asText();
+    xml = removeOption(xml, option);
+    zip.file('word/document.xml', xml);
+  }
+
+  const doc = new Docxtemplater(zip, {
+    paragraphLoop: true,
+    linebreaks:    true,
+    delimiters:    {start:'{{', end:'}}'},
+    nullGetter:    function() { return ''; }
+  });
+  doc.render(data);
+  return doc.getZip().generate({
+    type:     'blob',
+    mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  });
+}
+
+function removeOption(xml, chosen) {
+  const remove = chosen === 1 ? 2 : 1;
+  const marker = 'Option ' + remove + ' :';
+  // Supprimer chaque <w:p> contenant ce marqueur
+  const re = new RegExp('<w:p[ >][\\s\\S]*?' + marker.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '[\\s\\S]*?<\\/w:p>', 'g');
+  return xml.replace(re, '');
+}
+
+/* ── AI EXTRACTION ── */
+async function extractFiche(pdfFile) {
+  const apiKey = getApiKey();
+  if (!apiKey) throw new Error('Clé API Anthropic non configurée → Administration → Clé API');
+
+  const b64 = await fileToB64(pdfFile);
+
+  const prompt = 'Tu analyses une "Fiche de préparation de Bail" standardisée de Maison Daddy.\n' +
+    'C\'est un tableau : colonne gauche = libellé, colonne droite = valeur.\n' +
+    'Retourne UNIQUEMENT un objet JSON valide, sans texte ni backticks autour.\n' +
+    'Si une valeur est absente, mets "".\n\n' +
+    'Champs à extraire :\n' +
+    '- locataire_nom : nom ET prénom ensemble (ex: "Martin Jean")\n' +
+    '- locataire_date_lieu_naissance : ex "15/03/1985 à Paris"\n' +
+    '- locataire_nationalite\n- locataire_regime_matrimonial\n' +
+    '- locataire_adresse\n- locataire_telephone\n- locataire_email\n' +
+    '- date_signature : format JJ/MM/AAAA\n' +
+    '- option_bail : "1" si Option 1 cochée, "2" si Option 2\n' +
+    '- date_posterieure : format JJ/MM/AAAA si Option 2, sinon ""\n' +
+    '- numero_appartement\n' +
+    '- garant_prenom : nom ET prénom du garant ensemble, "" si pas de garant\n' +
+    '- garant_adresse\n' +
+    '- appartement_meuble : "meublé" ou "non meublé"\n' +
+    '- equipement_pmr : "Équipé PMR" ou "Non équipé PMR"\n' +
+    '- surface_habitable : nombre uniquement ex "29.07"\n' +
+    '- surface_carrez : nombre ex "22.06"\n' +
+    '- appt_type : ex "T2"\n' +
+    '- nb_chambres : ex "une (1)"\n' +
+    '- nb_salle_douche : ex "une (1)"\n' +
+    '- nb_salon : ex "une pièce principale"\n' +
+    '- depenses_energie_annuelles : ex "entre 360 € et 540 €"\n' +
+    '- montant_loyer : nombre uniquement ex "692.91"\n' +
+    '- provision_charges : nombre ex "130.81"\n' +
+    '- provision_garantie_mois : ex "un (1)"\n' +
+    '- provision_garantie : nombre ex "692.91"\n' +
+    '- plafond_honoraires_gestion : nombre ex "234.59"\n' +
+    '- plafond_etat_lieux : nombre ex "88.08"';
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2000,
+      messages: [{
+        role: 'user',
+        content: [
+          {type:'document', source:{type:'base64', media_type:'application/pdf', data:b64}},
+          {type:'text', text:prompt}
+        ]
+      }]
     })
-    .catch(function(e) { log('crypto.subtle ERREUR : ' + e); });
-} else {
-  log('crypto.subtle : NON DISPONIBLE ← PROBLÈME');
+  });
+
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error('API ' + res.status + ': ' + t.slice(0, 150));
+  }
+  const json = await res.json();
+  const txt  = (json.content || []).find(function(c) { return c.type === 'text'; });
+  try {
+    return JSON.parse((txt ? txt.text : '{}').replace(/```json|```/g,'').trim());
+  } catch(e) {
+    return {};
+  }
 }
 
-// Test localStorage
-log('=== 4. localStorage ===');
-try {
-  localStorage.setItem('_test', '1');
-  localStorage.removeItem('_test');
-  log('localStorage : OK');
-} catch(e) { log('localStorage BLOQUÉ : ' + e); }
-
-// Test sessionStorage
-log('=== 5. sessionStorage ===');
-try {
-  sessionStorage.setItem('_test', '1');
-  sessionStorage.removeItem('_test');
-  log('sessionStorage : OK');
-} catch(e) { log('sessionStorage BLOQUÉ : ' + e); }
-
-// Test async/await
-log('=== 6. async/await ===');
-async function testAsync() {
-  return 'async OK';
+/* ── SEPA ── */
+async function loadSepaList() {
+  const c = document.getElementById('sepaList');
+  try {
+    const q = (CU.role === 'maison' && CM) ? '&maison_id=eq.' + CM.id : '';
+    const rows = await sbQ('mandats_sepa?select=*&order=created_at.desc' + q);
+    if (!rows || !rows.length) {
+      c.innerHTML = '<div style="text-align:center;padding:32px;color:var(--mut)">Aucun mandat SEPA. Cliquez sur + pour en créer un.</div>';
+      return;
+    }
+    c.innerHTML = '<div class="tw"><table>' +
+      '<thead><tr><th>Locataire</th><th>IBAN</th><th>Maison</th><th>Date</th><th></th></tr></thead><tbody>' +
+      rows.map(function(r) {
+        const m = allM.find(function(x) { return x.id == r.maison_id; });
+        const dl = r.docx_path ? '<button class="btn bp" onclick="dlSb(\'' + r.docx_path + '\',\'sepa.docx\')">⬇️</button>' : '';
+        return '<tr><td>' + (r.locataire_nom||'—') + '</td><td><code>' + (r.iban||'—') + '</code></td><td>' + (m?m.nom:'—') + '</td>' +
+          '<td>' + (r.created_at ? new Date(r.created_at).toLocaleDateString('fr-FR') : '—') + '</td><td>' + dl + '</td></tr>';
+      }).join('') +
+      '</tbody></table></div>';
+  } catch(e) { c.innerHTML = '<p class="mut sm">Erreur: ' + e.message + '</p>'; }
 }
-testAsync().then(function(r) { log('async/await : ' + r); });
 
-// Test classList
-log('=== 7. classList ===');
-var d = document.createElement('div');
-d.classList.add('hidden');
-d.classList.remove('hidden');
-log('classList : OK');
+function initSepa() {
+  sw = {step:1, modPath:null, pdfFile:null, data:{}, genBlob:null};
+  document.getElementById('sepaWiz').classList.remove('hide');
+  sGs(1);
+  loadSepaModActif();
+}
 
-// Test fetch (Supabase)
-log('=== 8. fetch ===');
-log('fetch disponible : ' + (typeof fetch !== 'undefined'));
+function sGs(n) {
+  [1,2,3,4].forEach(function(i) {
+    document.getElementById('sS'+i).classList.toggle('hide', i !== n);
+    const l = document.getElementById('ss'+i);
+    l.className = 'stp' + (i < n ? ' done' : i === n ? ' on' : '');
+  });
+}
 
-log('\n=== RÉSUMÉ : copie ce texte et envoie-le ===');
+async function loadSepaModActif() {
+  const b = document.getElementById('sepaMA');
+  if (!CM) { b.innerHTML = '<p class="mut sm">Sélectionnez une maison.</p>'; return; }
+  try {
+    const mods = await sbQ('modeles?select=*&type_doc=eq.sepa&maison_id=eq.' + CM.id + '&order=created_at.desc&limit=1');
+    if (!mods || !mods.length) {
+      b.innerHTML = '<div class="al al-w">⚠️ Aucun modèle SEPA pour ' + CM.nom + '.</div>';
+    } else {
+      sw.modPath = mods[0].storage_path;
+      b.innerHTML = '<div class="flex aic gap12"><span class="mbdg ok">✅ Modèle actif</span><span><strong>' + mods[0].nom + '</strong></span></div>';
+    }
+  } catch(e) { b.innerHTML = '<div class="al al-w">Erreur: ' + e.message + '</div>'; }
+}
+
+function sN1() {
+  if (!sw.modPath) { toast('Aucun modèle SEPA configuré', 'err'); return; }
+  sGs(2);
+}
+
+function setRib(inp) {
+  const f = inp.files[0];
+  if (!f) return;
+  sw.pdfFile = f;
+  const pill = document.getElementById('ribPill');
+  pill.className = 'pill mt8';
+  pill.innerHTML = '📎 ' + f.name;
+}
+
+async function sN2() {
+  if (!sw.pdfFile) { toast('Déposez le PDF du RIB', 'err'); return; }
+  showLd('Extraction IBAN…');
+  try {
+    const data = await extractRib(sw.pdfFile);
+    sw.data = data;
+    if (data.iban)      document.getElementById('sIban').value = data.iban;
+    if (data.bic)       document.getElementById('sBic').value  = data.bic;
+    if (data.titulaire) document.getElementById('sTit').value  = data.titulaire;
+    if (data.banque)    document.getElementById('sBanq').value = data.banque;
+    hideLoad(); sGs(3);
+  } catch(e) { hideLoad(); toast('Extraction: ' + e.message, 'err'); sGs(3); }
+}
+
+async function extractRib(pdfFile) {
+  const ak = getApiKey();
+  if (!ak) throw new Error('Clé API non configurée');
+  const b64 = await fileToB64(pdfFile);
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','x-api-key':ak,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:400,
+      messages:[{role:'user', content:[
+        {type:'document', source:{type:'base64', media_type:'application/pdf', data:b64}},
+        {type:'text', text:'Analyse ce RIB. Retourne UNIQUEMENT ce JSON: {"iban":"","bic":"","titulaire":"","banque":""}. Rien d\'autre.'}
+      ]}]
+    })
+  });
+  if (!res.ok) throw new Error('API ' + res.status);
+  const json = await res.json();
+  const txt  = (json.content||[]).find(function(c){return c.type==='text';});
+  return JSON.parse((txt?txt.text:'{}').replace(/```json|```/g,'').trim());
+}
+
+async function sN3() {
+  const data = {
+    iban:         document.getElementById('sIban').value,
+    bic:          document.getElementById('sBic').value,
+    titulaire:    document.getElementById('sTit').value,
+    banque:       document.getElementById('sBanq').value,
+    locataire:    document.getElementById('sLoc').value,
+    adresse:      document.getElementById('sAdr').value,
+    date_mandat:  new Date().toLocaleDateString('fr-FR')
+  };
+  showLd('Génération mandat SEPA…');
+  try {
+    const mb   = await sbDown('modeles', sw.modPath);
+    const blob = await genDocx(mb, data, 0);
+    sw.genBlob = blob;
+    const fn = 'sepa_' + (data.locataire||'loc').replace(/\s+/g,'_') + '_' + Date.now() + '.docx';
+    await sbUp('baux-generes', fn, blob).catch(function(){});
+    await sbQ('mandats_sepa', {method:'POST', body:{locataire_nom:data.locataire, maison_id:CM?CM.id:null, iban:data.iban, statut:'genere', docx_path:fn}}).catch(function(){});
+    hideLoad(); sGs(4); toast('Mandat SEPA généré !', 'ok');
+  } catch(e) { hideLoad(); toast('Erreur: ' + e.message, 'err'); }
+}
+
+function dlSepa()   { if (sw.genBlob) saveAs(sw.genBlob, 'mandat_sepa_' + (sw.data&&sw.data.titulaire||'loc') + '.docx'); }
+function resetSepa(){ document.getElementById('sepaWiz').classList.add('hide'); loadSepaList(); }
+
+/* ── HISTORIQUE ── */
+async function loadHisto() {
+  const type = document.getElementById('hT').value;
+  const deb  = document.getElementById('hDe').value;
+  const fin  = document.getElementById('hFi').value;
+  const tb   = document.getElementById('histoTb');
+  tb.innerHTML = '<tr><td colspan="6" class="tc"><div class="spin" style="margin:16px auto"></div></td></tr>';
+  try {
+    let rows = [];
+    const q = (CU.role === 'maison' && CM) ? '&maison_id=eq.' + CM.id : '';
+    if (!type || type === 'bail') {
+      let qs = 'baux?select=*&order=created_at.desc' + q;
+      if (deb) qs += '&created_at=gte.' + deb;
+      if (fin) qs += '&created_at=lte.' + fin + 'T23:59:59';
+      const r = await sbQ(qs).catch(function(){return [];});
+      (r||[]).forEach(function(x) { x._t = 'bail'; rows.push(x); });
+    }
+    if (!type || type === 'sepa') {
+      let qs = 'mandats_sepa?select=*&order=created_at.desc' + q;
+      if (deb) qs += '&created_at=gte.' + deb;
+      if (fin) qs += '&created_at=lte.' + fin + 'T23:59:59';
+      const r = await sbQ(qs).catch(function(){return [];});
+      (r||[]).forEach(function(x) { x._t = 'sepa'; rows.push(x); });
+    }
+    rows.sort(function(a,b){ return new Date(b.created_at) - new Date(a.created_at); });
+    if (!rows.length) {
+      tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--mut)">Aucun document</td></tr>';
+      return;
+    }
+    tb.innerHTML = rows.map(function(r) {
+      const m  = allM.find(function(x){return x.id==r.maison_id;});
+      const dl = r.docx_path ? '<button class="btn bp" onclick="dlSb(\'' + r.docx_path + '\',\'doc.docx\')">⬇️</button>' : '';
+      const badge = r._t === 'bail' ? '<span class="bdg b3">bail</span>' : '<span class="bdg b2">SEPA</span>';
+      return '<tr><td>' + badge + '</td><td>' + (r.locataire_nom||'—') + '</td><td>' + (m?m.nom:'—') + '</td>' +
+        '<td>' + (r.created_at ? new Date(r.created_at).toLocaleDateString('fr-FR') : '—') + '</td>' +
+        '<td>' + bstat(r.statut) + '</td><td>' + dl + '</td></tr>';
+    }).join('');
+  } catch(e) {
+    tb.innerHTML = '<tr><td colspan="6" class="tc mut" style="padding:16px">Erreur: ' + e.message + '</td></tr>';
+  }
+}
+
+/* ── ADMIN ── */
+async function loadAdmin() {
+  if (CU.role !== 'admin') return;
+  updKeyStatus();
+
+  // Maisons
+  const mb = document.getElementById('adMaisons');
+  mb.innerHTML = '<div class="spin" style="margin:20px auto"></div>';
+  try {
+    const maisons = await sbQ('maisons?select=*&order=nom').catch(function(){return null;}) || allM;
+    let html = '<div class="tw"><table>' +
+      '<thead><tr><th>Maison</th><th>Ville</th><th>Login</th><th>Couleur</th><th>Modèle bail</th><th>Modèle SEPA</th><th>Actions</th></tr></thead>' +
+      '<tbody id="maisonsRows"></tbody></table></div>';
+    mb.innerHTML = html;
+    const tbody = document.getElementById('maisonsRows');
+    for (let i = 0; i < maisons.length; i++) {
+      const m = maisons[i];
+      const bail = await sbQ('modeles?select=nom,version,created_at&type_doc=eq.bail&maison_id=eq.' + m.id + '&order=created_at.desc&limit=1').catch(function(){return [];});
+      const sepa = await sbQ('modeles?select=nom,version,created_at&type_doc=eq.sepa&maison_id=eq.' + m.id + '&order=created_at.desc&limit=1').catch(function(){return [];});
+      const bM = bail && bail[0];
+      const sM = sepa && sepa[0];
+      const bBadge = bM ? '<span class="mbdg ok">✅ ' + bM.nom + ' v' + (bM.version||1) + '</span>' : '<span class="mbdg">⚠️ Aucun</span>';
+      const sBadge = sM ? '<span class="mbdg ok">✅ ' + sM.nom + ' v' + (sM.version||1) + '</span>' : '<span class="mbdg">⚠️ Aucun</span>';
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<td><strong>' + m.nom + '</strong></td>' +
+        '<td>' + (m.ville||'—') + '</td>' +
+        '<td><code>' + (m.login||'—') + '</code></td>' +
+        '<td><span style="display:inline-block;width:20px;height:20px;border-radius:4px;background:' + (m.couleur||'#ccc') + ';border:1px solid var(--brd)"></span></td>' +
+        '<td>' + bBadge + '</td><td>' + sBadge + '</td>' +
+        '<td class="flex gap8">' +
+        '<button class="btn bp" onclick="openUploadMod(\'' + m.id + '\',\'' + m.nom + '\')">📄 Modèle</button>' +
+        '<button class="btn bs" onclick="resetPw(\'' + m.id + '\',\'' + m.nom + '\')">🔑</button>' +
+        '</td>';
+      tbody.appendChild(tr);
+    }
+  } catch(e) { mb.innerHTML = '<p class="mut sm">Erreur: ' + e.message + '</p>'; }
+
+  // Utilisateurs
+  const ub    = document.getElementById('adUsers');
+  const users = getUsers();
+  const uRows = users.map(function(u, i) {
+    const role = u.role === 'admin' ? 'admin' : u.role === 'operations' ? 'opérations' : 'maison';
+    return '<tr>' +
+      '<td><strong>' + u.login + '</strong></td>' +
+      '<td><span class="bdg b' + (u.role==='admin'?'4':u.role==='operations'?'3':'2') + '">' + role + '</span></td>' +
+      '<td>' + (u.maison||'—') + '</td>' +
+      '<td><button class="btn bd" onclick="delUser(' + i + ')">🗑️</button></td>' +
+      '</tr>';
+  }).join('');
+  ub.innerHTML = '<div class="tw"><table>' +
+    '<thead><tr><th>Login</th><th>Rôle</th><th>Maison</th><th></th></tr></thead>' +
+    '<tbody>' + uRows + '</tbody></table></div>';
+
+  const q = new Date();
+  q.setMonth(q.getMonth() - 3);
+  document.getElementById('purgeD').value = q.toISOString().split('T')[0];
+}
+
+function openUploadMod(maisonId, maisonNom) {
+  upMaisonId = maisonId;
+  document.getElementById('mUpMN').textContent = maisonNom;
+  document.getElementById('mUpF').value = '';
+  document.getElementById('upPillM').className = 'hide';
+  openMod('mUpM');
+}
+
+function showUpPill(inp) {
+  const f = inp.files[0];
+  if (!f) return;
+  const p = document.getElementById('upPillM');
+  p.className = 'pill mt8';
+  p.innerHTML = '📎 ' + f.name;
+}
+
+async function doUpload() {
+  const file = document.getElementById('mUpF').files[0];
+  const type = document.getElementById('mUpT').value;
+  if (!file)        { toast('Sélectionnez un fichier .docx', 'err'); return; }
+  if (!upMaisonId)  { toast('Aucune maison sélectionnée', 'err'); return; }
+  showLd('Téléversement…');
+  try {
+    const ex = await sbQ('modeles?select=id&type_doc=eq.' + type + '&maison_id=eq.' + upMaisonId).catch(function(){return [];});
+    const v  = (ex ? ex.length : 0) + 1;
+    const path = type + '/' + upMaisonId + '/' + Date.now() + '_' + file.name;
+    await sbUp('modeles', path, file);
+    await sbQ('modeles', {method:'POST', body:{nom:file.name.replace('.docx',''), type_doc:type, maison_id:upMaisonId, storage_path:path, version:v}});
+    hideLoad(); closeMod('mUpM'); toast('Modèle téléversé', 'ok'); loadAdmin();
+  } catch(e) { hideLoad(); toast('Erreur: ' + e.message, 'err'); }
+}
+
+function saveKey() {
+  const k = document.getElementById('apiKI').value.trim();
+  if (!k) { toast('Entrez une clé valide', 'err'); return; }
+  localStorage.setItem('ak', k);
+  toast('Clé API enregistrée', 'ok');
+  updKeyStatus();
+}
+
+function updKeyStatus() {
+  const el = document.getElementById('apiKS');
+  if (!el) return;
+  const k = getApiKey();
+  el.textContent = k ? '✅ Clé configurée (' + k.slice(0,14) + '…)' : '⚠️ Aucune clé — extraction PDF non disponible';
+  el.style.color  = k ? '#0A5C36' : '#856404';
+}
+
+function crMaison() {
+  const nom  = document.getElementById('nMNom').value.trim();
+  const vil  = document.getElementById('nMVil').value.trim();
+  const adr  = document.getElementById('nMAdr').value.trim();
+  const lg   = document.getElementById('nMLg').value.trim();
+  const pw   = document.getElementById('nMMdp').value;
+  const col  = document.getElementById('nMCol').value;
+  if (!nom || !lg || !pw) { toast('Champs obligatoires manquants', 'err'); return; }
+  sbQ('maisons', {method:'POST', body:{nom:nom, ville:vil, adresse:adr, login:lg, password_hash:btoa(pw), couleur:col}})
+    .then(function() {
+      const u = getUsers();
+      hashPw(pw).then(function(pwh){
+        u.push({login:lg, pwh:pwh, role:'maison', maison:nom, display:nom});
+        saveUsers(u);
+        closeMod('mNM'); toast('Maison créée', 'ok');
+        sbQ('maisons?select=*&order=nom').then(function(rows){ if(rows&&rows.length){allM=rows;buildMaisonSel();} loadAdmin(); }).catch(function(){loadAdmin();});
+      });
+    }).catch(function(e) { toast('Erreur: ' + e.message, 'err'); });
+}
+
+function crUser() {
+  const lg    = document.getElementById('nULg').value.trim();
+  const pw    = document.getElementById('nUMd').value;
+  const role  = document.getElementById('nUR').value;
+  const mId   = document.getElementById('nUMS').value;
+  const maison= allM.find(function(m){return m.id==mId;});
+  if (!lg || !pw) { toast('Login et mot de passe requis', 'err'); return; }
+  const u = getUsers();
+  hashPw(pw).then(function(pwh) {
+    u.push({login:lg, pwh:pwh, role:role, maison:maison?maison.nom:null, display:lg});
+    saveUsers(u); closeMod('mNU'); toast('Utilisateur créé', 'ok'); loadAdmin();
+  });
+  return;
+}
+
+function delUser(i) {
+  cf2('Supprimer cet utilisateur ?', '', function() {
+    const u = getUsers(); u.splice(i, 1); saveUsers(u); toast('Supprimé', 'ok'); loadAdmin();
+  });
+}
+
+function resetPw(id, nom) {
+  const np = prompt('Nouveau mot de passe pour ' + nom + ' :');
+  if (!np) return;
+  sbQ('maisons?id=eq.' + id, {method:'PATCH', body:{password_hash:btoa(np)}})
+    .then(function(){ toast('Réinitialisé', 'ok'); })
+    .catch(function(e){ toast('Erreur: ' + e.message, 'err'); });
+}
+
+async function doPurge() {
+  const date = document.getElementById('purgeD').value;
+  if (!date) { toast('Sélectionnez une date', 'err'); return; }
+  cf2('⚠️ Purge des données', 'Données antérieures au ' + date + ' supprimées après export CSV.', async function() {
+    showLd('Export puis purge…');
+    try {
+      const baux = await sbQ('baux?select=*&created_at=lt.' + date);
+      if (baux && baux.length) exportCSV(baux, 'export_baux_' + date + '.csv');
+      await sbQ('baux?created_at=lt.' + date, {method:'DELETE'});
+      await sbQ('mandats_sepa?created_at=lt.' + date, {method:'DELETE'});
+      hideLoad(); toast('Purge effectuée', 'ok');
+    } catch(e) { hideLoad(); toast('Erreur: ' + e.message, 'err'); }
+  });
+}
+
+/* ── UTILS ── */
+function bstat(s) {
+  const map = {brouillon:'b1', valide:'b2', genere:'b3'};
+  const cls = map[s] || 'b1';
+  return '<span class="bdg ' + cls + '">' + (s||'—') + '</span>';
+}
+
+function mFr(v) {
+  return new Intl.NumberFormat('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}).format(v);
+}
+
+function n2l(n) {
+  if (n === 0) return 'zéro';
+  const u = ['','un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix','onze','douze','treize','quatorze','quinze','seize','dix-sept','dix-huit','dix-neuf'];
+  const d = ['','','vingt','trente','quarante','cinquante','soixante','soixante','quatre-vingt','quatre-vingt'];
+  function diz(x) {
+    if (x < 20) return u[x];
+    const di = Math.floor(x/10), un = x%10;
+    if (di === 7 || di === 9) return d[di] + (un===1&&di===7?'-et-':'-') + (u[10+un]||u[un]);
+    return d[di] + (un===1&&di!==8?'-et-':un?'-':'') + u[un];
+  }
+  function cent(x) {
+    const c = Math.floor(x/100), r = x%100;
+    if (c === 0) return diz(r);
+    const base = (c > 1 ? u[c] + '-' : '') + 'cent';
+    return r ? base + '-' + diz(r) : base + (c > 1 ? 's' : '');
+  }
+  const ent = Math.floor(n);
+  const dec = Math.round((n - ent) * 100);
+  let res = '';
+  if (ent >= 1000) {
+    const mil = Math.floor(ent/1000), r = ent%1000;
+    res = (mil === 1 ? 'mille' : cent(mil) + '-mille') + (r ? '-' + cent(r) : '');
+  } else {
+    res = cent(ent);
+  }
+  if (dec > 0) res += ' et ' + diz(dec) + ' centime' + (dec > 1 ? 's' : '');
+  return res.charAt(0).toUpperCase() + res.slice(1);
+}
+
+async function fileToB64(file) {
+  return new Promise(function(res, rej) {
+    const reader = new FileReader();
+    reader.onload  = function() { res(reader.result.split(',')[1]); };
+    reader.onerror = rej;
+    reader.readAsDataURL(file);
+  });
+}
+
+function exportCSV(rows, fn) {
+  if (!rows.length) return;
+  const keys = Object.keys(rows[0]);
+  const csv  = [keys.join(';')].concat(rows.map(function(r) {
+    return keys.map(function(k) { return JSON.stringify(r[k] != null ? r[k] : ''); }).join(';');
+  })).join('\n');
+  saveAs(new Blob([csv], {type:'text/csv;charset=utf-8'}), fn);
+}
+
+async function dlSb(path, fn) {
+  showLd('Téléchargement…');
+  try { const b = await sbDown('baux-generes', path); saveAs(b, fn); }
+  catch(e) { toast('Erreur: ' + e.message, 'err'); }
+  hideLoad();
+}
+
+function dov(e, id) { e.preventDefault(); document.getElementById(id).classList.add('drag'); }
+function dlv(id)    { document.getElementById(id).classList.remove('drag'); }
+function drp(e, inpId, zoneId) {
+  e.preventDefault(); dlv(zoneId);
+  const f = e.dataTransfer.files[0];
+  if (!f) return;
+  const inp = document.getElementById(inpId);
+  const dt  = new DataTransfer(); dt.items.add(f); inp.files = dt.files;
+  inp.dispatchEvent(new Event('change'));
+}
+
+function openMod(id)  { document.getElementById(id).classList.add('on'); }
+function closeMod(id) { document.getElementById(id).classList.remove('on'); }
+document.querySelectorAll('.mover').forEach(function(m) {
+  m.addEventListener('click', function(e) { if (e.target === m) m.classList.remove('on'); });
+});
+
+function cf2(title, msg, cb) {
+  document.getElementById('cfT').textContent = title;
+  document.getElementById('cfM').textContent = msg;
+  document.getElementById('cfOk').onclick = function() { closeMod('mCf'); cb(); };
+  openMod('mCf');
+}
+
+function showLd(msg) { document.getElementById('ldMsg').textContent = msg || 'Traitement…'; document.getElementById('ldOver').classList.add('on'); }
+function hideLoad()  { document.getElementById('ldOver').classList.remove('on'); }
+
+var _tt;
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className   = 'on' + (type ? ' ' + type : '');
+  clearTimeout(_tt);
+  _tt = setTimeout(function() { el.className = ''; }, 3500);
+}
+
+/* ── EXPOSE sur window (fix onclick inline GitHub Pages / strict mode) ── */
+window.doLogin       = doLogin;
+window.doLogout      = doLogout;
+window.toggleEye     = toggleEye;
+window.onMS          = onMS;
+window.gp            = gp;
+window.gpName        = gpName;
+window.loadBaux      = loadBaux;
+window.delBail       = delBail;
+window.bN1           = bN1;
+window.bN2           = bN2;
+window.bN3           = bN3;
+window.bGs           = bGs;
+window.setPdf        = setPdf;
+window.selOpt        = selOpt;
+window.tglG          = tglG;
+window.saveDraft     = saveDraft;
+window.dlBail        = dlBail;
+window.initSepa      = initSepa;
+window.sN1           = sN1;
+window.sN2           = sN2;
+window.sN3           = sN3;
+window.sGs           = sGs;
+window.setRib        = setRib;
+window.dlSepa        = dlSepa;
+window.resetSepa     = resetSepa;
+window.loadHisto     = loadHisto;
+window.openMod       = openMod;
+window.closeMod      = closeMod;
+window.openUploadMod = openUploadMod;
+window.showUpPill    = showUpPill;
+window.doUpload      = doUpload;
+window.saveKey       = saveKey;
+window.crMaison      = crMaison;
+window.crUser        = crUser;
+window.delUser       = delUser;
+window.resetPw       = resetPw;
+window.doPurge       = doPurge;
+window.dlSb          = dlSb;
+window.dov           = dov;
+window.dlv           = dlv;
+window.drp           = drp;
+
+/* ── BINDINGS CLAVIER ── */
+document.getElementById('liP').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+document.getElementById('liU').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+
+/* ── INIT ── */
+// Purger un localStorage corrompu (évite le blocage login)
+(function() {
+  var raw = localStorage.getItem('db_users');
+  if (raw) {
+    try { JSON.parse(atob(raw)); }
+    catch(e) { localStorage.removeItem('db_users'); console.warn('db_users corrompu, réinitialisé'); }
+  }
+})();
+
+// Reprendre la session si déjà connecté
+(function() {
+  try {
+    var s = safeStorage(function(){ return sessionStorage.getItem('sess'); }, null);
+    if (s) {
+      var u = JSON.parse(atob(s));
+      if (u && u.login) { CU = u; startApp(); }
+    }
+  } catch(e) {
+    safeStorage(function(){ sessionStorage.removeItem('sess'); }, null);
+  }
+})();
 </script>
-
-<button onclick="testFn()">Test onclick</button>
-<p id="onclickResult"></p>
-<script>
-function testFn2() {
-  document.getElementById('onclickResult').textContent = '✅ onclick fonctionne';
-}
-window.testFn2 = testFn2;
-</script>
-<button onclick="testFn2()">Test onclick 2</button>
 </body>
 </html>
