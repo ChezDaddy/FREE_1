@@ -2284,13 +2284,15 @@ async function generateMH() {
     const maison = currentMaison;
 
     let html = `<div class="print-doc" id="mh-print-content">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-        <span class="mh-page-title">Maison Daddy ${maison.nom.toUpperCase()}</span>
-        <span style="font-family:Calibri,Arial,sans-serif;font-size:16px;font-weight:700;color:#000">${dateLabel}</span>
-      </div>
-      <div style="font-family:Calibri,Arial,sans-serif;font-size:13px;color:#000;margin-bottom:10px;font-weight:600">Feuille Maître d'Hôtel</div>
-      <table class="print-table">
-        <thead>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:0">
+        <thead class="mh-repeat-header">
+          <tr><td colspan="9" style="border:none;padding:0 0 6px 0">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span class="mh-page-title">Maison Daddy ${maison.nom.toUpperCase()}</span>
+              <span style="font-family:Calibri,Arial,sans-serif;font-size:18px;font-weight:700;color:#000">${dateLabel}</span>
+            </div>
+            <div class="mh-page-subtitle">Feuille Maître d'Hôtel</div>
+          </td></tr>
           <tr>
             <th style="text-align:left;width:24%">Nom</th>
             <th style="width:4%">P.P.</th>
@@ -2304,6 +2306,7 @@ async function generateMH() {
           </tr>
         </thead>
         <tbody>
+
           <tr style="background:#B7242B!important;color:white!important">
             <td class="name-col" style="color:white;font-weight:700;font-size:13px;background:#B7242B!important">TOTAL REPAS</td>
             <td style="background:#B7242B!important"></td>
@@ -2402,9 +2405,13 @@ function printMH() {
       .name-col{text-align:left;font-weight:600;color:#000}
       /* Répétition du titre sur chaque page */
       @page { margin: 10mm; }
-      .mh-page-title { display:block; font-size:16px; font-weight:700; color:#000;
+      .mh-page-title { display:block; font-size:18px; font-weight:700; color:#000;
         font-family:Calibri,Arial,sans-serif; }
+      .mh-page-subtitle { display:block; font-size:15px; font-weight:600; color:#000;
+        font-family:Calibri,Arial,sans-serif; margin-bottom:8px; }
+      /* Répétition de l'en-tête sur chaque page */
       thead { display:table-header-group; }
+      .mh-repeat-header { display:table-header-group; }
     </style></head><body>${content.innerHTML}</body></html>`);
   w.document.close();
   w.document.title = mhTitle;
@@ -2644,7 +2651,7 @@ function printChef() {
       td{padding:4px 7px;border:1px solid #ddd}
       .total-row td{font-weight:bold;background:#eee!important}
       .name-col{text-align:left;font-weight:600}
-    </style></head><body>${clone.innerHTML}</body></html>`);
+    </style></head><body>${content.innerHTML}</body></html>`);
   w.document.close();
   w.document.title = chefTitle;
   setTimeout(() => { w.document.title = chefTitle; w.print(); w.close(); }, 400);
@@ -5159,13 +5166,15 @@ async function generateMH() {
     const maison = currentMaison;
 
     let html = `<div class="print-doc" id="mh-print-content">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-        <span class="mh-page-title">Maison Daddy ${maison.nom.toUpperCase()}</span>
-        <span style="font-family:Calibri,Arial,sans-serif;font-size:16px;font-weight:700;color:#000">${dateLabel}</span>
-      </div>
-      <div style="font-family:Calibri,Arial,sans-serif;font-size:13px;color:#000;margin-bottom:10px;font-weight:600">Feuille Maître d'Hôtel</div>
-      <table class="print-table">
-        <thead>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:0">
+        <thead class="mh-repeat-header">
+          <tr><td colspan="9" style="border:none;padding:0 0 6px 0">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span class="mh-page-title">Maison Daddy ${maison.nom.toUpperCase()}</span>
+              <span style="font-family:Calibri,Arial,sans-serif;font-size:18px;font-weight:700;color:#000">${dateLabel}</span>
+            </div>
+            <div class="mh-page-subtitle">Feuille Maître d'Hôtel</div>
+          </td></tr>
           <tr>
             <th style="text-align:left;width:24%">Nom</th>
             <th style="width:4%">P.P.</th>
@@ -5179,6 +5188,7 @@ async function generateMH() {
           </tr>
         </thead>
         <tbody>
+
           <tr style="background:#B7242B!important;color:white!important">
             <td class="name-col" style="color:white;font-weight:700;font-size:13px;background:#B7242B!important">TOTAL REPAS</td>
             <td style="background:#B7242B!important"></td>
@@ -5277,9 +5287,13 @@ function printMH() {
       .name-col{text-align:left;font-weight:600;color:#000}
       /* Répétition du titre sur chaque page */
       @page { margin: 10mm; }
-      .mh-page-title { display:block; font-size:16px; font-weight:700; color:#000;
+      .mh-page-title { display:block; font-size:18px; font-weight:700; color:#000;
         font-family:Calibri,Arial,sans-serif; }
+      .mh-page-subtitle { display:block; font-size:15px; font-weight:600; color:#000;
+        font-family:Calibri,Arial,sans-serif; margin-bottom:8px; }
+      /* Répétition de l'en-tête sur chaque page */
       thead { display:table-header-group; }
+      .mh-repeat-header { display:table-header-group; }
     </style></head><body>${clone.innerHTML}</body></html>`);
   w.document.close();
   w.document.title = mhTitle;
@@ -5519,7 +5533,7 @@ function printChef() {
       td{padding:4px 7px;border:1px solid #ddd}
       .total-row td{font-weight:bold;background:#eee!important}
       .name-col{text-align:left;font-weight:600}
-    </style></head><body>${clone.innerHTML}</body></html>`);
+    </style></head><body>${content.innerHTML}</body></html>`);
   w.document.close();
   w.document.title = chefTitle;
   setTimeout(() => { w.document.title = chefTitle; w.print(); w.close(); }, 400);
@@ -8034,13 +8048,15 @@ async function generateMH() {
     const maison = currentMaison;
 
     let html = `<div class="print-doc" id="mh-print-content">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-        <span class="mh-page-title">Maison Daddy ${maison.nom.toUpperCase()}</span>
-        <span style="font-family:Calibri,Arial,sans-serif;font-size:16px;font-weight:700;color:#000">${dateLabel}</span>
-      </div>
-      <div style="font-family:Calibri,Arial,sans-serif;font-size:13px;color:#000;margin-bottom:10px;font-weight:600">Feuille Maître d'Hôtel</div>
-      <table class="print-table">
-        <thead>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:0">
+        <thead class="mh-repeat-header">
+          <tr><td colspan="9" style="border:none;padding:0 0 6px 0">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span class="mh-page-title">Maison Daddy ${maison.nom.toUpperCase()}</span>
+              <span style="font-family:Calibri,Arial,sans-serif;font-size:18px;font-weight:700;color:#000">${dateLabel}</span>
+            </div>
+            <div class="mh-page-subtitle">Feuille Maître d'Hôtel</div>
+          </td></tr>
           <tr>
             <th style="text-align:left;width:24%">Nom</th>
             <th style="width:4%">P.P.</th>
@@ -8054,6 +8070,7 @@ async function generateMH() {
           </tr>
         </thead>
         <tbody>
+
           <tr style="background:#B7242B!important;color:white!important">
             <td class="name-col" style="color:white;font-weight:700;font-size:13px;background:#B7242B!important">TOTAL REPAS</td>
             <td style="background:#B7242B!important"></td>
@@ -8152,9 +8169,13 @@ function printMH() {
       .name-col{text-align:left;font-weight:600;color:#000}
       /* Répétition du titre sur chaque page */
       @page { margin: 10mm; }
-      .mh-page-title { display:block; font-size:16px; font-weight:700; color:#000;
+      .mh-page-title { display:block; font-size:18px; font-weight:700; color:#000;
         font-family:Calibri,Arial,sans-serif; }
+      .mh-page-subtitle { display:block; font-size:15px; font-weight:600; color:#000;
+        font-family:Calibri,Arial,sans-serif; margin-bottom:8px; }
+      /* Répétition de l'en-tête sur chaque page */
       thead { display:table-header-group; }
+      .mh-repeat-header { display:table-header-group; }
     </style></head><body>${clone.innerHTML}</body></html>`);
   w.document.close();
   w.document.title = mhTitle;
@@ -8394,7 +8415,7 @@ function printChef() {
       td{padding:4px 7px;border:1px solid #ddd}
       .total-row td{font-weight:bold;background:#eee!important}
       .name-col{text-align:left;font-weight:600}
-    </style></head><body>${clone.innerHTML}</body></html>`);
+    </style></head><body>${content.innerHTML}</body></html>`);
   w.document.close();
   w.document.title = chefTitle;
   setTimeout(() => { w.document.title = chefTitle; w.print(); w.close(); }, 400);
@@ -10909,13 +10930,15 @@ async function generateMH() {
     const maison = currentMaison;
 
     let html = `<div class="print-doc" id="mh-print-content">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-        <span class="mh-page-title">Maison Daddy ${maison.nom.toUpperCase()}</span>
-        <span style="font-family:Calibri,Arial,sans-serif;font-size:16px;font-weight:700;color:#000">${dateLabel}</span>
-      </div>
-      <div style="font-family:Calibri,Arial,sans-serif;font-size:13px;color:#000;margin-bottom:10px;font-weight:600">Feuille Maître d'Hôtel</div>
-      <table class="print-table">
-        <thead>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:0">
+        <thead class="mh-repeat-header">
+          <tr><td colspan="9" style="border:none;padding:0 0 6px 0">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span class="mh-page-title">Maison Daddy ${maison.nom.toUpperCase()}</span>
+              <span style="font-family:Calibri,Arial,sans-serif;font-size:18px;font-weight:700;color:#000">${dateLabel}</span>
+            </div>
+            <div class="mh-page-subtitle">Feuille Maître d'Hôtel</div>
+          </td></tr>
           <tr>
             <th style="text-align:left;width:24%">Nom</th>
             <th style="width:4%">P.P.</th>
@@ -10929,6 +10952,7 @@ async function generateMH() {
           </tr>
         </thead>
         <tbody>
+
           <tr style="background:#B7242B!important;color:white!important">
             <td class="name-col" style="color:white;font-weight:700;font-size:13px;background:#B7242B!important">TOTAL REPAS</td>
             <td style="background:#B7242B!important"></td>
@@ -11027,9 +11051,13 @@ function printMH() {
       .name-col{text-align:left;font-weight:600;color:#000}
       /* Répétition du titre sur chaque page */
       @page { margin: 10mm; }
-      .mh-page-title { display:block; font-size:16px; font-weight:700; color:#000;
+      .mh-page-title { display:block; font-size:18px; font-weight:700; color:#000;
         font-family:Calibri,Arial,sans-serif; }
+      .mh-page-subtitle { display:block; font-size:15px; font-weight:600; color:#000;
+        font-family:Calibri,Arial,sans-serif; margin-bottom:8px; }
+      /* Répétition de l'en-tête sur chaque page */
       thead { display:table-header-group; }
+      .mh-repeat-header { display:table-header-group; }
     </style></head><body>${clone.innerHTML}</body></html>`);
   w.document.close();
   w.document.title = mhTitle;
@@ -11269,7 +11297,7 @@ function printChef() {
       td{padding:4px 7px;border:1px solid #ddd}
       .total-row td{font-weight:bold;background:#eee!important}
       .name-col{text-align:left;font-weight:600}
-    </style></head><body>${clone.innerHTML}</body></html>`);
+    </style></head><body>${content.innerHTML}</body></html>`);
   w.document.close();
   w.document.title = chefTitle;
   setTimeout(() => { w.document.title = chefTitle; w.print(); w.close(); }, 400);
