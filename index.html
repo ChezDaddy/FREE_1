@@ -549,6 +549,7 @@
               <input type="date" id="chef-lundi" style="width:160px">
             </div>
             <button class="btn btn-primary" onclick="generateChef()">Générer</button>
+            <button class="btn btn-secondary" onclick="resetChef()">✕ Vider</button>
             <button class="btn btn-secondary" onclick="printChef()">🖨️ Imprimer</button>
           </div>
         </div>
@@ -1191,11 +1192,7 @@ function onMaisonChange() {
   const id = document.getElementById('maison-selector').value;
   currentMaison = allMaisons.find(m => m.id === id);
   applyMaisonContext();
-  // Réinitialiser la feuille Chef (saisies + output)
-  const chefOut = document.getElementById('chef-output');
-  if (chefOut) chefOut.innerHTML = '';
-  const chefInfos = document.getElementById('chef-infos-inputs');
-  if (chefInfos) chefInfos.remove();
+  resetChef();
   refreshCurrentPage();
 }
 
@@ -2389,16 +2386,19 @@ function printMH() {
 // =============================
 // FEUILLE CHEF
 // =============================
+function resetChef() {
+  const chefOut = document.getElementById('chef-output');
+  if (chefOut) chefOut.innerHTML = '';
+  const chefInfos = document.getElementById('chef-infos-inputs');
+  if (chefInfos) chefInfos.remove();
+}
+
 function initChef() {
   const el = document.getElementById('chef-lundi');
   if (!el.value) {
     el.value = fmtDateISO(getMondayOf(new Date()));
   }
-  // Vider l'output et la zone de saisie
-  const chefOut = document.getElementById('chef-output');
-  if (chefOut) chefOut.innerHTML = '';
-  const chefInfos = document.getElementById('chef-infos-inputs');
-  if (chefInfos) chefInfos.remove();
+  resetChef();
 }
 
 async function generateChef() {
@@ -4141,11 +4141,7 @@ function onMaisonChange() {
   const id = document.getElementById('maison-selector').value;
   currentMaison = allMaisons.find(m => m.id === id);
   applyMaisonContext();
-  // Réinitialiser la feuille Chef (saisies + output)
-  const chefOut = document.getElementById('chef-output');
-  if (chefOut) chefOut.innerHTML = '';
-  const chefInfos = document.getElementById('chef-infos-inputs');
-  if (chefInfos) chefInfos.remove();
+  resetChef();
   refreshCurrentPage();
 }
 
@@ -5339,16 +5335,19 @@ function printMH() {
 // =============================
 // FEUILLE CHEF
 // =============================
+function resetChef() {
+  const chefOut = document.getElementById('chef-output');
+  if (chefOut) chefOut.innerHTML = '';
+  const chefInfos = document.getElementById('chef-infos-inputs');
+  if (chefInfos) chefInfos.remove();
+}
+
 function initChef() {
   const el = document.getElementById('chef-lundi');
   if (!el.value) {
     el.value = fmtDateISO(getMondayOf(new Date()));
   }
-  // Vider l'output et la zone de saisie
-  const chefOut = document.getElementById('chef-output');
-  if (chefOut) chefOut.innerHTML = '';
-  const chefInfos = document.getElementById('chef-infos-inputs');
-  if (chefInfos) chefInfos.remove();
+  resetChef();
 }
 
 async function generateChef() {
@@ -7091,11 +7090,7 @@ function onMaisonChange() {
   const id = document.getElementById('maison-selector').value;
   currentMaison = allMaisons.find(m => m.id === id);
   applyMaisonContext();
-  // Réinitialiser la feuille Chef (saisies + output)
-  const chefOut = document.getElementById('chef-output');
-  if (chefOut) chefOut.innerHTML = '';
-  const chefInfos = document.getElementById('chef-infos-inputs');
-  if (chefInfos) chefInfos.remove();
+  resetChef();
   refreshCurrentPage();
 }
 
@@ -8289,16 +8284,19 @@ function printMH() {
 // =============================
 // FEUILLE CHEF
 // =============================
+function resetChef() {
+  const chefOut = document.getElementById('chef-output');
+  if (chefOut) chefOut.innerHTML = '';
+  const chefInfos = document.getElementById('chef-infos-inputs');
+  if (chefInfos) chefInfos.remove();
+}
+
 function initChef() {
   const el = document.getElementById('chef-lundi');
   if (!el.value) {
     el.value = fmtDateISO(getMondayOf(new Date()));
   }
-  // Vider l'output et la zone de saisie
-  const chefOut = document.getElementById('chef-output');
-  if (chefOut) chefOut.innerHTML = '';
-  const chefInfos = document.getElementById('chef-infos-inputs');
-  if (chefInfos) chefInfos.remove();
+  resetChef();
 }
 
 async function generateChef() {
@@ -10041,11 +10039,7 @@ function onMaisonChange() {
   const id = document.getElementById('maison-selector').value;
   currentMaison = allMaisons.find(m => m.id === id);
   applyMaisonContext();
-  // Réinitialiser la feuille Chef (saisies + output)
-  const chefOut = document.getElementById('chef-output');
-  if (chefOut) chefOut.innerHTML = '';
-  const chefInfos = document.getElementById('chef-infos-inputs');
-  if (chefInfos) chefInfos.remove();
+  resetChef();
   refreshCurrentPage();
 }
 
@@ -11239,16 +11233,19 @@ function printMH() {
 // =============================
 // FEUILLE CHEF
 // =============================
+function resetChef() {
+  const chefOut = document.getElementById('chef-output');
+  if (chefOut) chefOut.innerHTML = '';
+  const chefInfos = document.getElementById('chef-infos-inputs');
+  if (chefInfos) chefInfos.remove();
+}
+
 function initChef() {
   const el = document.getElementById('chef-lundi');
   if (!el.value) {
     el.value = fmtDateISO(getMondayOf(new Date()));
   }
-  // Vider l'output et la zone de saisie
-  const chefOut = document.getElementById('chef-output');
-  if (chefOut) chefOut.innerHTML = '';
-  const chefInfos = document.getElementById('chef-infos-inputs');
-  if (chefInfos) chefInfos.remove();
+  resetChef();
 }
 
 async function generateChef() {
