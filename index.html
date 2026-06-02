@@ -2589,22 +2589,43 @@ async function generateChef() {
       { id:'chef-info-nouveaux',  label:'Nouveaux',            val: savedVals['chef-info-nouveaux']||'' },
       { id:'chef-info-departs',   label:'Départs',             val: savedVals['chef-info-departs']||'' },
     ];
-    const rows = INFOS_ROWS.map(r => `
-      <tr>
-        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;width:140px;border:1px solid #ccc;font-size:12px">${r.label}</td>
-        <td style="padding:4px 6px;border:1px solid #ccc">
-          <input type="text" id="${r.id}" value="${r.val.replace(/"/g,'&quot;')}" placeholder="${r.val ? '' : 'Saisie libre…'}"
-            style="width:100%;padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px;box-sizing:border-box">
-        </td>
-      </tr>`).join('');
+    // Lignes avec cases OUI/NON pour Fruits et Laitages, champ libre pour les autres
+    const safeVal = v => (v||'').replace(/"/g,'&quot;');
+    const inp = (id,val) => `<input type="text" id="${id}" value="${safeVal(val)}" placeholder="Saisie libre…" style="width:100%;padding:5px 8px;border:1.5px solid #ccc;border-radius:4px;font-size:12px;box-sizing:border-box">`;
+    const rowsHtml = [
+      `<tr>
+        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;width:130px;border:1px solid #ccc;font-size:12px">Envie de fruits</td>
+        <td style="padding:6px 8px;border:1px solid #ccc;width:50px;text-align:center"><label style="cursor:pointer"><input type="checkbox" id="chef-cb-fruits-non" style="margin-right:3px">NON</label></td>
+        <td style="padding:6px 8px;border:1px solid #ccc;width:50px;text-align:center"><label style="cursor:pointer"><input type="checkbox" id="chef-cb-fruits-oui" style="margin-right:3px">OUI</label></td>
+        <td style="padding:4px 6px;border:1px solid #ccc">${inp('chef-info-fruits', INFOS_ROWS[0].val)}</td>
+      </tr>`,
+      `<tr>
+        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;border:1px solid #ccc;font-size:12px">Envie de laitages</td>
+        <td style="padding:6px 8px;border:1px solid #ccc;text-align:center"><label style="cursor:pointer"><input type="checkbox" id="chef-cb-laitages-non" style="margin-right:3px">NON</label></td>
+        <td style="padding:6px 8px;border:1px solid #ccc;text-align:center"><label style="cursor:pointer"><input type="checkbox" id="chef-cb-laitages-oui" style="margin-right:3px">OUI</label></td>
+        <td style="padding:4px 6px;border:1px solid #ccc">${inp('chef-info-laitages', INFOS_ROWS[1].val)}</td>
+      </tr>`,
+      `<tr>
+        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;border:1px solid #ccc;font-size:12px">Anniversaire</td>
+        <td colspan="2" style="padding:6px 8px;border:1px solid #ccc;font-size:11px;color:#555">${annivPreFill}</td>
+        <td style="padding:4px 6px;border:1px solid #ccc">${inp('chef-info-anniv', INFOS_ROWS[2].val)}</td>
+      </tr>`,
+      ...['Manquants','Absences','Hospitalisations','Nouveaux','Départs'].map((label,i) => {
+        const row = INFOS_ROWS[3+i];
+        return `<tr>
+          <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;border:1px solid #ccc;font-size:12px">${label}</td>
+          <td colspan="2" style="padding:6px 8px;border:1px solid #ccc"></td>
+          <td style="padding:4px 6px;border:1px solid #ccc">${inp(row.id, row.val)}</td>
+        </tr>`;
+      })
+    ].join('');
 
     // Sauvegarder les valeurs saisies avant re-génération
     const savedVals = {};
     const oldDiv = document.getElementById('chef-infos-inputs');
     if (oldDiv) {
-      oldDiv.querySelectorAll('input[type=text]').forEach(inp => {
-        savedVals[inp.id] = inp.value;
-      });
+      oldDiv.querySelectorAll('input[type=text]').forEach(i => { savedVals[i.id] = i.value; });
+      oldDiv.querySelectorAll('input[type=checkbox]').forEach(i => { savedVals[i.id] = i.checked; });
       oldDiv.remove();
     }
 
@@ -2613,8 +2634,15 @@ async function generateChef() {
     infosDiv.style.cssText = 'margin-top:16px;padding:0 4px';
     infosDiv.innerHTML = `
       <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:#2C3E50">Informations complémentaires — Saisie</div>
-      <table style="width:100%;border-collapse:collapse;font-size:12px">${rows}</table>`;
+      <table style="width:100%;border-collapse:collapse;font-size:12px">${rowsHtml}</table>`;
     document.getElementById('chef-output').after(infosDiv);
+    // Restaurer les checkboxes
+    ['fruits','laitages'].forEach(k => {
+      const non = document.getElementById('chef-cb-'+k+'-non');
+      const oui = document.getElementById('chef-cb-'+k+'-oui');
+      if (non && savedVals['chef-cb-'+k+'-non']) non.checked = true;
+      if (oui && savedVals['chef-cb-'+k+'-oui']) oui.checked = true;
+    });
   } catch(e) {
     toast('Erreur: '+e.message,'error');
   }
@@ -2625,21 +2653,24 @@ function printChef() {
   if (!content) { toast('Générez d\'abord la feuille','error'); return; }
 
   // Lire les valeurs des inputs de saisie
-  const getVal = id => (document.getElementById(id)||{}).value || '';
+  const getVal  = id => (document.getElementById(id)||{}).value || '';
+  const getCb   = id => (document.getElementById(id)||{}).checked ? '✓' : '☐';
+  const fruitsNon = getCb('chef-cb-fruits-non');   const fruitsOui = getCb('chef-cb-fruits-oui');
+  const laitNon   = getCb('chef-cb-laitages-non'); const laitOui   = getCb('chef-cb-laitages-oui');
   const chefInfosHTML = `
     <div style="margin-top:20px;font-family:Calibri,Arial,sans-serif">
       <div style="font-weight:700;font-size:12px;margin-bottom:8px;border-bottom:2px solid #333;padding-bottom:4px">Informations complémentaires</div>
       <table style="width:100%;border-collapse:collapse;font-size:11px">
         <tr>
           <td style="padding:5px 7px;border:1px solid #555;background:#eee;font-weight:700;width:120px">Envie de fruits</td>
-          <td style="padding:5px 7px;border:1px solid #555;width:55px;text-align:center">☐ NON</td>
-          <td style="padding:5px 7px;border:1px solid #555;width:55px;text-align:center">☐ OUI</td>
+          <td style="padding:5px 7px;border:1px solid #555;width:55px;text-align:center">${fruitsNon} NON</td>
+          <td style="padding:5px 7px;border:1px solid #555;width:55px;text-align:center">${fruitsOui} OUI</td>
           <td style="padding:5px 7px;border:1px solid #555">${getVal('chef-info-fruits')}</td>
         </tr>
         <tr>
           <td style="padding:5px 7px;border:1px solid #555;background:#eee;font-weight:700">Envie de laitages</td>
-          <td style="padding:5px 7px;border:1px solid #555;text-align:center">☐ NON</td>
-          <td style="padding:5px 7px;border:1px solid #555;text-align:center">☐ OUI</td>
+          <td style="padding:5px 7px;border:1px solid #555;text-align:center">${laitNon} NON</td>
+          <td style="padding:5px 7px;border:1px solid #555;text-align:center">${laitOui} OUI</td>
           <td style="padding:5px 7px;border:1px solid #555">${getVal('chef-info-laitages')}</td>
         </tr>
         <tr>
@@ -5528,22 +5559,43 @@ async function generateChef() {
       { id:'chef-info-nouveaux',  label:'Nouveaux',            val: savedVals['chef-info-nouveaux']||'' },
       { id:'chef-info-departs',   label:'Départs',             val: savedVals['chef-info-departs']||'' },
     ];
-    const rows = INFOS_ROWS.map(r => `
-      <tr>
-        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;width:140px;border:1px solid #ccc;font-size:12px">${r.label}</td>
-        <td style="padding:4px 6px;border:1px solid #ccc">
-          <input type="text" id="${r.id}" value="${r.val.replace(/"/g,'&quot;')}" placeholder="${r.val ? '' : 'Saisie libre…'}"
-            style="width:100%;padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px;box-sizing:border-box">
-        </td>
-      </tr>`).join('');
+    // Lignes avec cases OUI/NON pour Fruits et Laitages, champ libre pour les autres
+    const safeVal = v => (v||'').replace(/"/g,'&quot;');
+    const inp = (id,val) => `<input type="text" id="${id}" value="${safeVal(val)}" placeholder="Saisie libre…" style="width:100%;padding:5px 8px;border:1.5px solid #ccc;border-radius:4px;font-size:12px;box-sizing:border-box">`;
+    const rowsHtml = [
+      `<tr>
+        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;width:130px;border:1px solid #ccc;font-size:12px">Envie de fruits</td>
+        <td style="padding:6px 8px;border:1px solid #ccc;width:50px;text-align:center"><label style="cursor:pointer"><input type="checkbox" id="chef-cb-fruits-non" style="margin-right:3px">NON</label></td>
+        <td style="padding:6px 8px;border:1px solid #ccc;width:50px;text-align:center"><label style="cursor:pointer"><input type="checkbox" id="chef-cb-fruits-oui" style="margin-right:3px">OUI</label></td>
+        <td style="padding:4px 6px;border:1px solid #ccc">${inp('chef-info-fruits', INFOS_ROWS[0].val)}</td>
+      </tr>`,
+      `<tr>
+        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;border:1px solid #ccc;font-size:12px">Envie de laitages</td>
+        <td style="padding:6px 8px;border:1px solid #ccc;text-align:center"><label style="cursor:pointer"><input type="checkbox" id="chef-cb-laitages-non" style="margin-right:3px">NON</label></td>
+        <td style="padding:6px 8px;border:1px solid #ccc;text-align:center"><label style="cursor:pointer"><input type="checkbox" id="chef-cb-laitages-oui" style="margin-right:3px">OUI</label></td>
+        <td style="padding:4px 6px;border:1px solid #ccc">${inp('chef-info-laitages', INFOS_ROWS[1].val)}</td>
+      </tr>`,
+      `<tr>
+        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;border:1px solid #ccc;font-size:12px">Anniversaire</td>
+        <td colspan="2" style="padding:6px 8px;border:1px solid #ccc;font-size:11px;color:#555">${annivPreFill}</td>
+        <td style="padding:4px 6px;border:1px solid #ccc">${inp('chef-info-anniv', INFOS_ROWS[2].val)}</td>
+      </tr>`,
+      ...['Manquants','Absences','Hospitalisations','Nouveaux','Départs'].map((label,i) => {
+        const row = INFOS_ROWS[3+i];
+        return `<tr>
+          <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;border:1px solid #ccc;font-size:12px">${label}</td>
+          <td colspan="2" style="padding:6px 8px;border:1px solid #ccc"></td>
+          <td style="padding:4px 6px;border:1px solid #ccc">${inp(row.id, row.val)}</td>
+        </tr>`;
+      })
+    ].join('');
 
     // Sauvegarder les valeurs saisies avant re-génération
     const savedVals = {};
     const oldDiv = document.getElementById('chef-infos-inputs');
     if (oldDiv) {
-      oldDiv.querySelectorAll('input[type=text]').forEach(inp => {
-        savedVals[inp.id] = inp.value;
-      });
+      oldDiv.querySelectorAll('input[type=text]').forEach(i => { savedVals[i.id] = i.value; });
+      oldDiv.querySelectorAll('input[type=checkbox]').forEach(i => { savedVals[i.id] = i.checked; });
       oldDiv.remove();
     }
 
@@ -5552,8 +5604,15 @@ async function generateChef() {
     infosDiv.style.cssText = 'margin-top:16px;padding:0 4px';
     infosDiv.innerHTML = `
       <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:#2C3E50">Informations complémentaires — Saisie</div>
-      <table style="width:100%;border-collapse:collapse;font-size:12px">${rows}</table>`;
+      <table style="width:100%;border-collapse:collapse;font-size:12px">${rowsHtml}</table>`;
     document.getElementById('chef-output').after(infosDiv);
+    // Restaurer les checkboxes
+    ['fruits','laitages'].forEach(k => {
+      const non = document.getElementById('chef-cb-'+k+'-non');
+      const oui = document.getElementById('chef-cb-'+k+'-oui');
+      if (non && savedVals['chef-cb-'+k+'-non']) non.checked = true;
+      if (oui && savedVals['chef-cb-'+k+'-oui']) oui.checked = true;
+    });
   } catch(e) {
     toast('Erreur: '+e.message,'error');
   }
@@ -5564,21 +5623,24 @@ function printChef() {
   if (!content) { toast('Générez d\'abord la feuille','error'); return; }
 
   // Lire les valeurs des inputs de saisie
-  const getVal = id => (document.getElementById(id)||{}).value || '';
+  const getVal  = id => (document.getElementById(id)||{}).value || '';
+  const getCb   = id => (document.getElementById(id)||{}).checked ? '✓' : '☐';
+  const fruitsNon = getCb('chef-cb-fruits-non');   const fruitsOui = getCb('chef-cb-fruits-oui');
+  const laitNon   = getCb('chef-cb-laitages-non'); const laitOui   = getCb('chef-cb-laitages-oui');
   const chefInfosHTML = `
     <div style="margin-top:20px;font-family:Calibri,Arial,sans-serif">
       <div style="font-weight:700;font-size:12px;margin-bottom:8px;border-bottom:2px solid #333;padding-bottom:4px">Informations complémentaires</div>
       <table style="width:100%;border-collapse:collapse;font-size:11px">
         <tr>
           <td style="padding:5px 7px;border:1px solid #555;background:#eee;font-weight:700;width:120px">Envie de fruits</td>
-          <td style="padding:5px 7px;border:1px solid #555;width:55px;text-align:center">☐ NON</td>
-          <td style="padding:5px 7px;border:1px solid #555;width:55px;text-align:center">☐ OUI</td>
+          <td style="padding:5px 7px;border:1px solid #555;width:55px;text-align:center">${fruitsNon} NON</td>
+          <td style="padding:5px 7px;border:1px solid #555;width:55px;text-align:center">${fruitsOui} OUI</td>
           <td style="padding:5px 7px;border:1px solid #555">${getVal('chef-info-fruits')}</td>
         </tr>
         <tr>
           <td style="padding:5px 7px;border:1px solid #555;background:#eee;font-weight:700">Envie de laitages</td>
-          <td style="padding:5px 7px;border:1px solid #555;text-align:center">☐ NON</td>
-          <td style="padding:5px 7px;border:1px solid #555;text-align:center">☐ OUI</td>
+          <td style="padding:5px 7px;border:1px solid #555;text-align:center">${laitNon} NON</td>
+          <td style="padding:5px 7px;border:1px solid #555;text-align:center">${laitOui} OUI</td>
           <td style="padding:5px 7px;border:1px solid #555">${getVal('chef-info-laitages')}</td>
         </tr>
         <tr>
@@ -8467,22 +8529,43 @@ async function generateChef() {
       { id:'chef-info-nouveaux',  label:'Nouveaux',            val: savedVals['chef-info-nouveaux']||'' },
       { id:'chef-info-departs',   label:'Départs',             val: savedVals['chef-info-departs']||'' },
     ];
-    const rows = INFOS_ROWS.map(r => `
-      <tr>
-        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;width:140px;border:1px solid #ccc;font-size:12px">${r.label}</td>
-        <td style="padding:4px 6px;border:1px solid #ccc">
-          <input type="text" id="${r.id}" value="${r.val.replace(/"/g,'&quot;')}" placeholder="${r.val ? '' : 'Saisie libre…'}"
-            style="width:100%;padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px;box-sizing:border-box">
-        </td>
-      </tr>`).join('');
+    // Lignes avec cases OUI/NON pour Fruits et Laitages, champ libre pour les autres
+    const safeVal = v => (v||'').replace(/"/g,'&quot;');
+    const inp = (id,val) => `<input type="text" id="${id}" value="${safeVal(val)}" placeholder="Saisie libre…" style="width:100%;padding:5px 8px;border:1.5px solid #ccc;border-radius:4px;font-size:12px;box-sizing:border-box">`;
+    const rowsHtml = [
+      `<tr>
+        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;width:130px;border:1px solid #ccc;font-size:12px">Envie de fruits</td>
+        <td style="padding:6px 8px;border:1px solid #ccc;width:50px;text-align:center"><label style="cursor:pointer"><input type="checkbox" id="chef-cb-fruits-non" style="margin-right:3px">NON</label></td>
+        <td style="padding:6px 8px;border:1px solid #ccc;width:50px;text-align:center"><label style="cursor:pointer"><input type="checkbox" id="chef-cb-fruits-oui" style="margin-right:3px">OUI</label></td>
+        <td style="padding:4px 6px;border:1px solid #ccc">${inp('chef-info-fruits', INFOS_ROWS[0].val)}</td>
+      </tr>`,
+      `<tr>
+        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;border:1px solid #ccc;font-size:12px">Envie de laitages</td>
+        <td style="padding:6px 8px;border:1px solid #ccc;text-align:center"><label style="cursor:pointer"><input type="checkbox" id="chef-cb-laitages-non" style="margin-right:3px">NON</label></td>
+        <td style="padding:6px 8px;border:1px solid #ccc;text-align:center"><label style="cursor:pointer"><input type="checkbox" id="chef-cb-laitages-oui" style="margin-right:3px">OUI</label></td>
+        <td style="padding:4px 6px;border:1px solid #ccc">${inp('chef-info-laitages', INFOS_ROWS[1].val)}</td>
+      </tr>`,
+      `<tr>
+        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;border:1px solid #ccc;font-size:12px">Anniversaire</td>
+        <td colspan="2" style="padding:6px 8px;border:1px solid #ccc;font-size:11px;color:#555">${annivPreFill}</td>
+        <td style="padding:4px 6px;border:1px solid #ccc">${inp('chef-info-anniv', INFOS_ROWS[2].val)}</td>
+      </tr>`,
+      ...['Manquants','Absences','Hospitalisations','Nouveaux','Départs'].map((label,i) => {
+        const row = INFOS_ROWS[3+i];
+        return `<tr>
+          <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;border:1px solid #ccc;font-size:12px">${label}</td>
+          <td colspan="2" style="padding:6px 8px;border:1px solid #ccc"></td>
+          <td style="padding:4px 6px;border:1px solid #ccc">${inp(row.id, row.val)}</td>
+        </tr>`;
+      })
+    ].join('');
 
     // Sauvegarder les valeurs saisies avant re-génération
     const savedVals = {};
     const oldDiv = document.getElementById('chef-infos-inputs');
     if (oldDiv) {
-      oldDiv.querySelectorAll('input[type=text]').forEach(inp => {
-        savedVals[inp.id] = inp.value;
-      });
+      oldDiv.querySelectorAll('input[type=text]').forEach(i => { savedVals[i.id] = i.value; });
+      oldDiv.querySelectorAll('input[type=checkbox]').forEach(i => { savedVals[i.id] = i.checked; });
       oldDiv.remove();
     }
 
@@ -8491,8 +8574,15 @@ async function generateChef() {
     infosDiv.style.cssText = 'margin-top:16px;padding:0 4px';
     infosDiv.innerHTML = `
       <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:#2C3E50">Informations complémentaires — Saisie</div>
-      <table style="width:100%;border-collapse:collapse;font-size:12px">${rows}</table>`;
+      <table style="width:100%;border-collapse:collapse;font-size:12px">${rowsHtml}</table>`;
     document.getElementById('chef-output').after(infosDiv);
+    // Restaurer les checkboxes
+    ['fruits','laitages'].forEach(k => {
+      const non = document.getElementById('chef-cb-'+k+'-non');
+      const oui = document.getElementById('chef-cb-'+k+'-oui');
+      if (non && savedVals['chef-cb-'+k+'-non']) non.checked = true;
+      if (oui && savedVals['chef-cb-'+k+'-oui']) oui.checked = true;
+    });
   } catch(e) {
     toast('Erreur: '+e.message,'error');
   }
@@ -8503,21 +8593,24 @@ function printChef() {
   if (!content) { toast('Générez d\'abord la feuille','error'); return; }
 
   // Lire les valeurs des inputs de saisie
-  const getVal = id => (document.getElementById(id)||{}).value || '';
+  const getVal  = id => (document.getElementById(id)||{}).value || '';
+  const getCb   = id => (document.getElementById(id)||{}).checked ? '✓' : '☐';
+  const fruitsNon = getCb('chef-cb-fruits-non');   const fruitsOui = getCb('chef-cb-fruits-oui');
+  const laitNon   = getCb('chef-cb-laitages-non'); const laitOui   = getCb('chef-cb-laitages-oui');
   const chefInfosHTML = `
     <div style="margin-top:20px;font-family:Calibri,Arial,sans-serif">
       <div style="font-weight:700;font-size:12px;margin-bottom:8px;border-bottom:2px solid #333;padding-bottom:4px">Informations complémentaires</div>
       <table style="width:100%;border-collapse:collapse;font-size:11px">
         <tr>
           <td style="padding:5px 7px;border:1px solid #555;background:#eee;font-weight:700;width:120px">Envie de fruits</td>
-          <td style="padding:5px 7px;border:1px solid #555;width:55px;text-align:center">☐ NON</td>
-          <td style="padding:5px 7px;border:1px solid #555;width:55px;text-align:center">☐ OUI</td>
+          <td style="padding:5px 7px;border:1px solid #555;width:55px;text-align:center">${fruitsNon} NON</td>
+          <td style="padding:5px 7px;border:1px solid #555;width:55px;text-align:center">${fruitsOui} OUI</td>
           <td style="padding:5px 7px;border:1px solid #555">${getVal('chef-info-fruits')}</td>
         </tr>
         <tr>
           <td style="padding:5px 7px;border:1px solid #555;background:#eee;font-weight:700">Envie de laitages</td>
-          <td style="padding:5px 7px;border:1px solid #555;text-align:center">☐ NON</td>
-          <td style="padding:5px 7px;border:1px solid #555;text-align:center">☐ OUI</td>
+          <td style="padding:5px 7px;border:1px solid #555;text-align:center">${laitNon} NON</td>
+          <td style="padding:5px 7px;border:1px solid #555;text-align:center">${laitOui} OUI</td>
           <td style="padding:5px 7px;border:1px solid #555">${getVal('chef-info-laitages')}</td>
         </tr>
         <tr>
@@ -11406,22 +11499,43 @@ async function generateChef() {
       { id:'chef-info-nouveaux',  label:'Nouveaux',            val: savedVals['chef-info-nouveaux']||'' },
       { id:'chef-info-departs',   label:'Départs',             val: savedVals['chef-info-departs']||'' },
     ];
-    const rows = INFOS_ROWS.map(r => `
-      <tr>
-        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;width:140px;border:1px solid #ccc;font-size:12px">${r.label}</td>
-        <td style="padding:4px 6px;border:1px solid #ccc">
-          <input type="text" id="${r.id}" value="${r.val.replace(/"/g,'&quot;')}" placeholder="${r.val ? '' : 'Saisie libre…'}"
-            style="width:100%;padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px;box-sizing:border-box">
-        </td>
-      </tr>`).join('');
+    // Lignes avec cases OUI/NON pour Fruits et Laitages, champ libre pour les autres
+    const safeVal = v => (v||'').replace(/"/g,'&quot;');
+    const inp = (id,val) => `<input type="text" id="${id}" value="${safeVal(val)}" placeholder="Saisie libre…" style="width:100%;padding:5px 8px;border:1.5px solid #ccc;border-radius:4px;font-size:12px;box-sizing:border-box">`;
+    const rowsHtml = [
+      `<tr>
+        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;width:130px;border:1px solid #ccc;font-size:12px">Envie de fruits</td>
+        <td style="padding:6px 8px;border:1px solid #ccc;width:50px;text-align:center"><label style="cursor:pointer"><input type="checkbox" id="chef-cb-fruits-non" style="margin-right:3px">NON</label></td>
+        <td style="padding:6px 8px;border:1px solid #ccc;width:50px;text-align:center"><label style="cursor:pointer"><input type="checkbox" id="chef-cb-fruits-oui" style="margin-right:3px">OUI</label></td>
+        <td style="padding:4px 6px;border:1px solid #ccc">${inp('chef-info-fruits', INFOS_ROWS[0].val)}</td>
+      </tr>`,
+      `<tr>
+        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;border:1px solid #ccc;font-size:12px">Envie de laitages</td>
+        <td style="padding:6px 8px;border:1px solid #ccc;text-align:center"><label style="cursor:pointer"><input type="checkbox" id="chef-cb-laitages-non" style="margin-right:3px">NON</label></td>
+        <td style="padding:6px 8px;border:1px solid #ccc;text-align:center"><label style="cursor:pointer"><input type="checkbox" id="chef-cb-laitages-oui" style="margin-right:3px">OUI</label></td>
+        <td style="padding:4px 6px;border:1px solid #ccc">${inp('chef-info-laitages', INFOS_ROWS[1].val)}</td>
+      </tr>`,
+      `<tr>
+        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;border:1px solid #ccc;font-size:12px">Anniversaire</td>
+        <td colspan="2" style="padding:6px 8px;border:1px solid #ccc;font-size:11px;color:#555">${annivPreFill}</td>
+        <td style="padding:4px 6px;border:1px solid #ccc">${inp('chef-info-anniv', INFOS_ROWS[2].val)}</td>
+      </tr>`,
+      ...['Manquants','Absences','Hospitalisations','Nouveaux','Départs'].map((label,i) => {
+        const row = INFOS_ROWS[3+i];
+        return `<tr>
+          <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;border:1px solid #ccc;font-size:12px">${label}</td>
+          <td colspan="2" style="padding:6px 8px;border:1px solid #ccc"></td>
+          <td style="padding:4px 6px;border:1px solid #ccc">${inp(row.id, row.val)}</td>
+        </tr>`;
+      })
+    ].join('');
 
     // Sauvegarder les valeurs saisies avant re-génération
     const savedVals = {};
     const oldDiv = document.getElementById('chef-infos-inputs');
     if (oldDiv) {
-      oldDiv.querySelectorAll('input[type=text]').forEach(inp => {
-        savedVals[inp.id] = inp.value;
-      });
+      oldDiv.querySelectorAll('input[type=text]').forEach(i => { savedVals[i.id] = i.value; });
+      oldDiv.querySelectorAll('input[type=checkbox]').forEach(i => { savedVals[i.id] = i.checked; });
       oldDiv.remove();
     }
 
@@ -11430,8 +11544,15 @@ async function generateChef() {
     infosDiv.style.cssText = 'margin-top:16px;padding:0 4px';
     infosDiv.innerHTML = `
       <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:#2C3E50">Informations complémentaires — Saisie</div>
-      <table style="width:100%;border-collapse:collapse;font-size:12px">${rows}</table>`;
+      <table style="width:100%;border-collapse:collapse;font-size:12px">${rowsHtml}</table>`;
     document.getElementById('chef-output').after(infosDiv);
+    // Restaurer les checkboxes
+    ['fruits','laitages'].forEach(k => {
+      const non = document.getElementById('chef-cb-'+k+'-non');
+      const oui = document.getElementById('chef-cb-'+k+'-oui');
+      if (non && savedVals['chef-cb-'+k+'-non']) non.checked = true;
+      if (oui && savedVals['chef-cb-'+k+'-oui']) oui.checked = true;
+    });
   } catch(e) {
     toast('Erreur: '+e.message,'error');
   }
@@ -11442,21 +11563,24 @@ function printChef() {
   if (!content) { toast('Générez d\'abord la feuille','error'); return; }
 
   // Lire les valeurs des inputs de saisie
-  const getVal = id => (document.getElementById(id)||{}).value || '';
+  const getVal  = id => (document.getElementById(id)||{}).value || '';
+  const getCb   = id => (document.getElementById(id)||{}).checked ? '✓' : '☐';
+  const fruitsNon = getCb('chef-cb-fruits-non');   const fruitsOui = getCb('chef-cb-fruits-oui');
+  const laitNon   = getCb('chef-cb-laitages-non'); const laitOui   = getCb('chef-cb-laitages-oui');
   const chefInfosHTML = `
     <div style="margin-top:20px;font-family:Calibri,Arial,sans-serif">
       <div style="font-weight:700;font-size:12px;margin-bottom:8px;border-bottom:2px solid #333;padding-bottom:4px">Informations complémentaires</div>
       <table style="width:100%;border-collapse:collapse;font-size:11px">
         <tr>
           <td style="padding:5px 7px;border:1px solid #555;background:#eee;font-weight:700;width:120px">Envie de fruits</td>
-          <td style="padding:5px 7px;border:1px solid #555;width:55px;text-align:center">☐ NON</td>
-          <td style="padding:5px 7px;border:1px solid #555;width:55px;text-align:center">☐ OUI</td>
+          <td style="padding:5px 7px;border:1px solid #555;width:55px;text-align:center">${fruitsNon} NON</td>
+          <td style="padding:5px 7px;border:1px solid #555;width:55px;text-align:center">${fruitsOui} OUI</td>
           <td style="padding:5px 7px;border:1px solid #555">${getVal('chef-info-fruits')}</td>
         </tr>
         <tr>
           <td style="padding:5px 7px;border:1px solid #555;background:#eee;font-weight:700">Envie de laitages</td>
-          <td style="padding:5px 7px;border:1px solid #555;text-align:center">☐ NON</td>
-          <td style="padding:5px 7px;border:1px solid #555;text-align:center">☐ OUI</td>
+          <td style="padding:5px 7px;border:1px solid #555;text-align:center">${laitNon} NON</td>
+          <td style="padding:5px 7px;border:1px solid #555;text-align:center">${laitOui} OUI</td>
           <td style="padding:5px 7px;border:1px solid #555">${getVal('chef-info-laitages')}</td>
         </tr>
         <tr>
