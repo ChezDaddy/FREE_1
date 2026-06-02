@@ -553,44 +553,7 @@
           </div>
         </div>
         <div id="chef-output" class="print-doc-wrap"></div>
-        <!-- Vrais inputs pour les infos complémentaires -->
-        <div id="chef-infos-inputs" style="display:none;margin-top:16px;padding:0 4px">
-          <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:var(--gris-fonce,#2C3E50)">Informations complémentaires — Saisie</div>
-          <table style="width:100%;border-collapse:collapse;font-size:12px">
-            <tr>
-              <td style="padding:6px 8px;background:var(--gris-clair,#F2F3F4);font-weight:600;width:130px;border:1px solid #ccc">Envie de fruits</td>
-              <td style="padding:4px 6px;border:1px solid #ccc"><input type="text" id="chef-info-fruits" placeholder="Remarque libre…" style="width:100%;padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px"></td>
-            </tr>
-            <tr>
-              <td style="padding:6px 8px;background:var(--gris-clair,#F2F3F4);font-weight:600;border:1px solid #ccc">Envie de laitages</td>
-              <td style="padding:4px 6px;border:1px solid #ccc"><input type="text" id="chef-info-laitages" placeholder="Remarque libre…" style="width:100%;padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px"></td>
-            </tr>
-            <tr>
-              <td style="padding:6px 8px;background:var(--gris-clair,#F2F3F4);font-weight:600;border:1px solid #ccc">Anniversaire</td>
-              <td style="padding:4px 6px;border:1px solid #ccc"><input type="text" id="chef-info-anniv" placeholder="Remarque libre…" style="width:100%;padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px"></td>
-            </tr>
-            <tr>
-              <td style="padding:6px 8px;background:var(--gris-clair,#F2F3F4);font-weight:600;border:1px solid #ccc">Manquants</td>
-              <td style="padding:4px 6px;border:1px solid #ccc"><input type="text" id="chef-info-manquants" placeholder="Saisie libre…" style="width:100%;padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px"></td>
-            </tr>
-            <tr>
-              <td style="padding:6px 8px;background:var(--gris-clair,#F2F3F4);font-weight:600;border:1px solid #ccc">Absences</td>
-              <td style="padding:4px 6px;border:1px solid #ccc"><input type="text" id="chef-info-absences" placeholder="Saisie libre…" style="width:100%;padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px"></td>
-            </tr>
-            <tr>
-              <td style="padding:6px 8px;background:var(--gris-clair,#F2F3F4);font-weight:600;border:1px solid #ccc">Hospitalisations</td>
-              <td style="padding:4px 6px;border:1px solid #ccc"><input type="text" id="chef-info-hospit" placeholder="Saisie libre…" style="width:100%;padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px"></td>
-            </tr>
-            <tr>
-              <td style="padding:6px 8px;background:var(--gris-clair,#F2F3F4);font-weight:600;border:1px solid #ccc">Nouveaux</td>
-              <td style="padding:4px 6px;border:1px solid #ccc"><input type="text" id="chef-info-nouveaux" placeholder="Saisie libre…" style="width:100%;padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px"></td>
-            </tr>
-            <tr>
-              <td style="padding:6px 8px;background:var(--gris-clair,#F2F3F4);font-weight:600;border:1px solid #ccc">Départs</td>
-              <td style="padding:4px 6px;border:1px solid #ccc"><input type="text" id="chef-info-departs" placeholder="Saisie libre…" style="width:100%;padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px"></td>
-            </tr>
-          </table>
-        </div>
+
       </div>
 
       <!-- PAGE: EXPORT CSV -->
@@ -2613,7 +2576,39 @@ async function generateChef() {
     </div>`;
 
     document.getElementById('chef-output').innerHTML = html;
-    document.getElementById('chef-infos-inputs').style.display = 'block';
+
+    // Créer dynamiquement la zone de saisie des infos complémentaires
+    const annivPreFill = anniversairesChef.length ? anniversairesChef.join(' ; ') : '';
+    const INFOS_ROWS = [
+      { id:'chef-info-fruits',    label:'Envie de fruits',    val:'' },
+      { id:'chef-info-laitages',  label:'Envie de laitages',  val:'' },
+      { id:'chef-info-anniv',     label:'Anniversaire',        val:annivPreFill },
+      { id:'chef-info-manquants', label:'Manquants',           val:'' },
+      { id:'chef-info-absences',  label:'Absences',            val:'' },
+      { id:'chef-info-hospit',    label:'Hospitalisations',    val:'' },
+      { id:'chef-info-nouveaux',  label:'Nouveaux',            val:'' },
+      { id:'chef-info-departs',   label:'Départs',             val:'' },
+    ];
+    const rows = INFOS_ROWS.map(r => `
+      <tr>
+        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;width:140px;border:1px solid #ccc;font-size:12px">${r.label}</td>
+        <td style="padding:4px 6px;border:1px solid #ccc">
+          <input type="text" id="${r.id}" value="${r.val.replace(/"/g,'&quot;')}" placeholder="${r.val ? '' : 'Saisie libre…'}"
+            style="width:100%;padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px;box-sizing:border-box">
+        </td>
+      </tr>`).join('');
+
+    // Supprimer l'ancien div s'il existe (re-génération)
+    const oldDiv = document.getElementById('chef-infos-inputs');
+    if (oldDiv) oldDiv.remove();
+
+    const infosDiv = document.createElement('div');
+    infosDiv.id = 'chef-infos-inputs';
+    infosDiv.style.cssText = 'margin-top:16px;padding:0 4px';
+    infosDiv.innerHTML = `
+      <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:#2C3E50">Informations complémentaires — Saisie</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">${rows}</table>`;
+    document.getElementById('chef-output').after(infosDiv);
   } catch(e) {
     toast('Erreur: '+e.message,'error');
   }
@@ -5495,7 +5490,39 @@ async function generateChef() {
     </div>`;
 
     document.getElementById('chef-output').innerHTML = html;
-    document.getElementById('chef-infos-inputs').style.display = 'block';
+
+    // Créer dynamiquement la zone de saisie des infos complémentaires
+    const annivPreFill = anniversairesChef.length ? anniversairesChef.join(' ; ') : '';
+    const INFOS_ROWS = [
+      { id:'chef-info-fruits',    label:'Envie de fruits',    val:'' },
+      { id:'chef-info-laitages',  label:'Envie de laitages',  val:'' },
+      { id:'chef-info-anniv',     label:'Anniversaire',        val:annivPreFill },
+      { id:'chef-info-manquants', label:'Manquants',           val:'' },
+      { id:'chef-info-absences',  label:'Absences',            val:'' },
+      { id:'chef-info-hospit',    label:'Hospitalisations',    val:'' },
+      { id:'chef-info-nouveaux',  label:'Nouveaux',            val:'' },
+      { id:'chef-info-departs',   label:'Départs',             val:'' },
+    ];
+    const rows = INFOS_ROWS.map(r => `
+      <tr>
+        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;width:140px;border:1px solid #ccc;font-size:12px">${r.label}</td>
+        <td style="padding:4px 6px;border:1px solid #ccc">
+          <input type="text" id="${r.id}" value="${r.val.replace(/"/g,'&quot;')}" placeholder="${r.val ? '' : 'Saisie libre…'}"
+            style="width:100%;padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px;box-sizing:border-box">
+        </td>
+      </tr>`).join('');
+
+    // Supprimer l'ancien div s'il existe (re-génération)
+    const oldDiv = document.getElementById('chef-infos-inputs');
+    if (oldDiv) oldDiv.remove();
+
+    const infosDiv = document.createElement('div');
+    infosDiv.id = 'chef-infos-inputs';
+    infosDiv.style.cssText = 'margin-top:16px;padding:0 4px';
+    infosDiv.innerHTML = `
+      <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:#2C3E50">Informations complémentaires — Saisie</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">${rows}</table>`;
+    document.getElementById('chef-output').after(infosDiv);
   } catch(e) {
     toast('Erreur: '+e.message,'error');
   }
@@ -8377,7 +8404,39 @@ async function generateChef() {
     </div>`;
 
     document.getElementById('chef-output').innerHTML = html;
-    document.getElementById('chef-infos-inputs').style.display = 'block';
+
+    // Créer dynamiquement la zone de saisie des infos complémentaires
+    const annivPreFill = anniversairesChef.length ? anniversairesChef.join(' ; ') : '';
+    const INFOS_ROWS = [
+      { id:'chef-info-fruits',    label:'Envie de fruits',    val:'' },
+      { id:'chef-info-laitages',  label:'Envie de laitages',  val:'' },
+      { id:'chef-info-anniv',     label:'Anniversaire',        val:annivPreFill },
+      { id:'chef-info-manquants', label:'Manquants',           val:'' },
+      { id:'chef-info-absences',  label:'Absences',            val:'' },
+      { id:'chef-info-hospit',    label:'Hospitalisations',    val:'' },
+      { id:'chef-info-nouveaux',  label:'Nouveaux',            val:'' },
+      { id:'chef-info-departs',   label:'Départs',             val:'' },
+    ];
+    const rows = INFOS_ROWS.map(r => `
+      <tr>
+        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;width:140px;border:1px solid #ccc;font-size:12px">${r.label}</td>
+        <td style="padding:4px 6px;border:1px solid #ccc">
+          <input type="text" id="${r.id}" value="${r.val.replace(/"/g,'&quot;')}" placeholder="${r.val ? '' : 'Saisie libre…'}"
+            style="width:100%;padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px;box-sizing:border-box">
+        </td>
+      </tr>`).join('');
+
+    // Supprimer l'ancien div s'il existe (re-génération)
+    const oldDiv = document.getElementById('chef-infos-inputs');
+    if (oldDiv) oldDiv.remove();
+
+    const infosDiv = document.createElement('div');
+    infosDiv.id = 'chef-infos-inputs';
+    infosDiv.style.cssText = 'margin-top:16px;padding:0 4px';
+    infosDiv.innerHTML = `
+      <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:#2C3E50">Informations complémentaires — Saisie</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">${rows}</table>`;
+    document.getElementById('chef-output').after(infosDiv);
   } catch(e) {
     toast('Erreur: '+e.message,'error');
   }
@@ -11259,7 +11318,39 @@ async function generateChef() {
     </div>`;
 
     document.getElementById('chef-output').innerHTML = html;
-    document.getElementById('chef-infos-inputs').style.display = 'block';
+
+    // Créer dynamiquement la zone de saisie des infos complémentaires
+    const annivPreFill = anniversairesChef.length ? anniversairesChef.join(' ; ') : '';
+    const INFOS_ROWS = [
+      { id:'chef-info-fruits',    label:'Envie de fruits',    val:'' },
+      { id:'chef-info-laitages',  label:'Envie de laitages',  val:'' },
+      { id:'chef-info-anniv',     label:'Anniversaire',        val:annivPreFill },
+      { id:'chef-info-manquants', label:'Manquants',           val:'' },
+      { id:'chef-info-absences',  label:'Absences',            val:'' },
+      { id:'chef-info-hospit',    label:'Hospitalisations',    val:'' },
+      { id:'chef-info-nouveaux',  label:'Nouveaux',            val:'' },
+      { id:'chef-info-departs',   label:'Départs',             val:'' },
+    ];
+    const rows = INFOS_ROWS.map(r => `
+      <tr>
+        <td style="padding:6px 8px;background:#F2F3F4;font-weight:600;width:140px;border:1px solid #ccc;font-size:12px">${r.label}</td>
+        <td style="padding:4px 6px;border:1px solid #ccc">
+          <input type="text" id="${r.id}" value="${r.val.replace(/"/g,'&quot;')}" placeholder="${r.val ? '' : 'Saisie libre…'}"
+            style="width:100%;padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px;box-sizing:border-box">
+        </td>
+      </tr>`).join('');
+
+    // Supprimer l'ancien div s'il existe (re-génération)
+    const oldDiv = document.getElementById('chef-infos-inputs');
+    if (oldDiv) oldDiv.remove();
+
+    const infosDiv = document.createElement('div');
+    infosDiv.id = 'chef-infos-inputs';
+    infosDiv.style.cssText = 'margin-top:16px;padding:0 4px';
+    infosDiv.innerHTML = `
+      <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:#2C3E50">Informations complémentaires — Saisie</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">${rows}</table>`;
+    document.getElementById('chef-output').after(infosDiv);
   } catch(e) {
     toast('Erreur: '+e.message,'error');
   }
