@@ -2577,6 +2577,14 @@ async function generateChef() {
 
     document.getElementById('chef-output').innerHTML = html;
 
+    // Sauvegarder d'abord les valeurs existantes
+    const savedVals = {};
+    const oldDiv0 = document.getElementById('chef-infos-inputs');
+    if (oldDiv0) {
+      oldDiv0.querySelectorAll('input[type=text]').forEach(i => { savedVals[i.id] = i.value; });
+      oldDiv0.querySelectorAll('input[type=checkbox]').forEach(i => { savedVals[i.id] = i.checked; });
+    }
+
     // Créer dynamiquement la zone de saisie des infos complémentaires
     const annivPreFill = anniversairesChef.length ? anniversairesChef.join(' ; ') : '';
     const INFOS_ROWS = [
@@ -2620,14 +2628,9 @@ async function generateChef() {
       })
     ].join('');
 
-    // Sauvegarder les valeurs saisies avant re-génération
-    const savedVals = {};
+    // Supprimer l'ancien div (déjà sauvegardé ci-dessus)
     const oldDiv = document.getElementById('chef-infos-inputs');
-    if (oldDiv) {
-      oldDiv.querySelectorAll('input[type=text]').forEach(i => { savedVals[i.id] = i.value; });
-      oldDiv.querySelectorAll('input[type=checkbox]').forEach(i => { savedVals[i.id] = i.checked; });
-      oldDiv.remove();
-    }
+    if (oldDiv) oldDiv.remove();
 
     const infosDiv = document.createElement('div');
     infosDiv.id = 'chef-infos-inputs';
@@ -5547,6 +5550,14 @@ async function generateChef() {
 
     document.getElementById('chef-output').innerHTML = html;
 
+    // Sauvegarder d'abord les valeurs existantes
+    const savedVals = {};
+    const oldDiv0 = document.getElementById('chef-infos-inputs');
+    if (oldDiv0) {
+      oldDiv0.querySelectorAll('input[type=text]').forEach(i => { savedVals[i.id] = i.value; });
+      oldDiv0.querySelectorAll('input[type=checkbox]').forEach(i => { savedVals[i.id] = i.checked; });
+    }
+
     // Créer dynamiquement la zone de saisie des infos complémentaires
     const annivPreFill = anniversairesChef.length ? anniversairesChef.join(' ; ') : '';
     const INFOS_ROWS = [
@@ -5590,14 +5601,9 @@ async function generateChef() {
       })
     ].join('');
 
-    // Sauvegarder les valeurs saisies avant re-génération
-    const savedVals = {};
+    // Supprimer l'ancien div (déjà sauvegardé ci-dessus)
     const oldDiv = document.getElementById('chef-infos-inputs');
-    if (oldDiv) {
-      oldDiv.querySelectorAll('input[type=text]').forEach(i => { savedVals[i.id] = i.value; });
-      oldDiv.querySelectorAll('input[type=checkbox]').forEach(i => { savedVals[i.id] = i.checked; });
-      oldDiv.remove();
-    }
+    if (oldDiv) oldDiv.remove();
 
     const infosDiv = document.createElement('div');
     infosDiv.id = 'chef-infos-inputs';
@@ -8517,6 +8523,14 @@ async function generateChef() {
 
     document.getElementById('chef-output').innerHTML = html;
 
+    // Sauvegarder d'abord les valeurs existantes
+    const savedVals = {};
+    const oldDiv0 = document.getElementById('chef-infos-inputs');
+    if (oldDiv0) {
+      oldDiv0.querySelectorAll('input[type=text]').forEach(i => { savedVals[i.id] = i.value; });
+      oldDiv0.querySelectorAll('input[type=checkbox]').forEach(i => { savedVals[i.id] = i.checked; });
+    }
+
     // Créer dynamiquement la zone de saisie des infos complémentaires
     const annivPreFill = anniversairesChef.length ? anniversairesChef.join(' ; ') : '';
     const INFOS_ROWS = [
@@ -8560,14 +8574,9 @@ async function generateChef() {
       })
     ].join('');
 
-    // Sauvegarder les valeurs saisies avant re-génération
-    const savedVals = {};
+    // Supprimer l'ancien div (déjà sauvegardé ci-dessus)
     const oldDiv = document.getElementById('chef-infos-inputs');
-    if (oldDiv) {
-      oldDiv.querySelectorAll('input[type=text]').forEach(i => { savedVals[i.id] = i.value; });
-      oldDiv.querySelectorAll('input[type=checkbox]').forEach(i => { savedVals[i.id] = i.checked; });
-      oldDiv.remove();
-    }
+    if (oldDiv) oldDiv.remove();
 
     const infosDiv = document.createElement('div');
     infosDiv.id = 'chef-infos-inputs';
@@ -11487,6 +11496,14 @@ async function generateChef() {
 
     document.getElementById('chef-output').innerHTML = html;
 
+    // Sauvegarder d'abord les valeurs existantes
+    const savedVals = {};
+    const oldDiv0 = document.getElementById('chef-infos-inputs');
+    if (oldDiv0) {
+      oldDiv0.querySelectorAll('input[type=text]').forEach(i => { savedVals[i.id] = i.value; });
+      oldDiv0.querySelectorAll('input[type=checkbox]').forEach(i => { savedVals[i.id] = i.checked; });
+    }
+
     // Créer dynamiquement la zone de saisie des infos complémentaires
     const annivPreFill = anniversairesChef.length ? anniversairesChef.join(' ; ') : '';
     const INFOS_ROWS = [
@@ -11530,14 +11547,9 @@ async function generateChef() {
       })
     ].join('');
 
-    // Sauvegarder les valeurs saisies avant re-génération
-    const savedVals = {};
+    // Supprimer l'ancien div (déjà sauvegardé ci-dessus)
     const oldDiv = document.getElementById('chef-infos-inputs');
-    if (oldDiv) {
-      oldDiv.querySelectorAll('input[type=text]').forEach(i => { savedVals[i.id] = i.value; });
-      oldDiv.querySelectorAll('input[type=checkbox]').forEach(i => { savedVals[i.id] = i.checked; });
-      oldDiv.remove();
-    }
+    if (oldDiv) oldDiv.remove();
 
     const infosDiv = document.createElement('div');
     infosDiv.id = 'chef-infos-inputs';
