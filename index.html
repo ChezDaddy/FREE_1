@@ -905,7 +905,7 @@ async function renderDashboard(){
     <div class="metric"><div class="lbl">Chantiers actifs</div><div class="val">${nbActifs}</div><div class="sub">En cours</div></div>`;
 
   if(chantiers.length===0){
-    document.getElementById('dash-chantiers').innerHTML='<div class="empty-state">Aucun chantier. <a href="#" onclick="showPage('chantiers')" style="color:var(--red)">Créer le premier →</a></div>';
+    document.getElementById('dash-chantiers').innerHTML='<div class="empty-state">Aucun chantier. <a href="#" onclick="showPage(&apos;chantiers&apos;)" style="color:var(--red)">Créer le premier →</a></div>';
     return;
   }
   let html='<div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">Avancement par chantier</div><div style="display:grid;gap:10px">';
@@ -1356,7 +1356,7 @@ async function exportCSV(){
 // MIGRATION localStorage → Supabase
 // ============================================================
 async function migrateLocalToSupabase(){
-  if(!supabaseClient){toast('Configurez Supabase d'abord');return;}
+  if(!supabaseClient){toast("Configurez Supabase d'abord");return;}
   const all=getLocalChantiers();
   if(!all.length){toast('Aucune donnée locale à migrer');return;}
   toast('Migration en cours…',8000);
